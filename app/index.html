@@ -29,6 +29,23 @@
             margin-bottom:30px;
         }
 
+        .brand-row{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+
+        .brand-logo{
+            width:72px;
+            height:72px;
+            object-fit:contain;
+            flex:0 0 auto;
+        }
+
+        .header p{
+            text-align:center;
+        }
+
         h1{
             font-size:2rem;
             color:#1e293b;
@@ -126,6 +143,15 @@
                 font-size:1.6rem;
             }
 
+            .brand-row{
+                gap:10px;
+            }
+
+            .brand-logo{
+                width:56px;
+                height:56px;
+            }
+
             .progress-card,
             .task-card{
                 border-radius:14px;
@@ -143,8 +169,11 @@
 <div class="container">
 
     <div class="header">
-        <h1>🌱 SproutOps</h1>
-        <p>Simple production tracking</p>
+        <div class="brand-row">
+            <img class="brand-logo" src="assets/logo_new.png" alt="Giggle Sprouts logo">
+            <h1>SproutOps</h1>
+        </div>
+        <p>Operations center for Giggle Sprouts</p>
     </div>
 
     <div class="progress-card">
