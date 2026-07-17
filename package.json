@@ -1,0 +1,14 @@
+{
+  "name": "sproutops",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^9.0.0",
+    "jsdom": "^24.0.0",
+    "vitest": "^2.1.4"
+  }
+}

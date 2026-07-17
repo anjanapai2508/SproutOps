@@ -2,242 +2,106 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <title>SproutOps</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-        }
-
-        body{
-            background:#f5f7fb;
-            display:flex;
-            justify-content:center;
-            padding:40px 20px;
-        }
-
-        .container{
-            width:100%;
-            max-width:700px;
-        }
-
-        .header{
-            margin-bottom:30px;
-        }
-
-        .brand-row{
-            display:flex;
-            align-items:center;
-            gap:12px;
-        }
-
-        .brand-logo{
-            width:72px;
-            height:72px;
-            object-fit:contain;
-            flex:0 0 auto;
-        }
-
-        .header p{
-            text-align:center;
-        }
-
-        h1{
-            font-size:2rem;
-            color:#1e293b;
-        }
-
-        p{
-            color:#64748b;
-            margin-top:6px;
-        }
-
-        .progress-card,
-        .task-card{
-            background:white;
-            border-radius:18px;
-            padding:20px;
-            box-shadow:0 8px 30px rgba(0,0,0,.05);
-            margin-bottom:18px;
-        }
-
-        .progress{
-            height:12px;
-            background:#e5e7eb;
-            border-radius:100px;
-            overflow:hidden;
-            margin-top:15px;
-        }
-
-        .progress-fill{
-            width:57%;
-            height:100%;
-            background:#3b82f6;
-        }
-
-        .task{
-            display:flex;
-            align-items:center;
-            padding:16px 0;
-            border-bottom:1px solid #f1f5f9;
-        }
-
-        .task:last-child{
-            border:none;
-        }
-
-        input{
-            width:22px;
-            height:22px;
-            margin-right:15px;
-        }
-
-        .task-text{
-            flex:1;
-        }
-
-        .task-title{
-            font-weight:600;
-            color:#0f172a;
-        }
-
-        .task-sub{
-            font-size:.85rem;
-            color:#64748b;
-            margin-top:3px;
-        }
-
-        .badge{
-            padding:6px 10px;
-            border-radius:999px;
-            font-size:.75rem;
-            font-weight:600;
-        }
-
-        .ready{
-            background:#dbeafe;
-            color:#2563eb;
-        }
-
-        .waiting{
-            background:#fef3c7;
-            color:#92400e;
-        }
-
-        .done{
-            background:#dcfce7;
-            color:#15803d;
-        }
-
-        @media(max-width:600px){
-
-            body{
-                padding:18px;
-            }
-
-            h1{
-                font-size:1.6rem;
-            }
-
-            .brand-row{
-                gap:10px;
-            }
-
-            .brand-logo{
-                width:56px;
-                height:56px;
-            }
-
-            .progress-card,
-            .task-card{
-                border-radius:14px;
-                padding:18px;
-            }
-
-        }
-
+        :root { color-scheme: light; --bg:#FAFAF8; --surface:#FFF; --surface-muted:#F7F7F4; --text:#202124; --text-soft:#4B5563; --muted:#8A8F98; --line:#ECECEC; --accent:#239CC3; --sprout:#73B52B; --sprout-soft:#E7F2DD; --shadow:0 18px 40px rgba(20,24,35,.08); }
+        * { box-sizing:border-box; margin:0; padding:0; font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+        body { min-height:100vh; padding:0 16px 40px; background:var(--bg); color:var(--text); }
+        button,input { font:inherit; }
+        button { -webkit-tap-highlight-color:transparent; }
+        .page-shell { max-width:900px; margin:0 auto; }
+        .header { position: sticky; top:0; z-index:10; display:flex; align-items:center; gap:16px; padding:12px 0; margin-bottom:20px; background:rgba(250,250,248,.86); border-bottom:1px solid rgba(236,236,236,.9); backdrop-filter: blur(14px); -webkit-backdrop-filter:blur(14px); }
+        .brand-row { display:flex; align-items:center; gap:12px; }
+        .brand-logo { width:44px; height:44px; object-fit:contain; flex-shrink:0; }
+        .app-title { font-size:26px; font-weight:700; letter-spacing:-.02em; line-height:1.05; }
+        .header-copy { margin-top:4px; color:var(--text-soft); font-size:14px; font-weight:500; }
+        .header-progress { display:flex; align-items:baseline; gap:6px; margin-left:auto; color:var(--text-soft); font-size:12px; font-weight:600; white-space:nowrap; }
+        .header-progress strong { color:var(--text); font-size:14px; }
+        .new-video-btn,.back-link,.create-version-btn { border:0; border-radius:999px; background:var(--accent); color:#fff; padding:10px 14px; min-height:40px; font-weight:600; cursor:pointer; box-shadow:0 8px 18px rgba(35,156,195,.22); transition:transform 160ms ease,box-shadow 160ms ease; }
+        .new-video-btn:hover,.create-version-btn:hover { transform:translateY(-1px); box-shadow:0 11px 20px rgba(35,156,195,.26); }
+        .new-video-btn:active,.create-version-btn:active { transform:scale(.98); }
+        .new-video-fab { display:none; position:fixed; right:calc(24px + env(safe-area-inset-right)); bottom:calc(24px + env(safe-area-inset-bottom)); z-index:15; width:56px; min-width:56px; height:56px; min-height:56px; align-items:center; justify-content:center; padding:0; border-radius:50%; font-size:30px; font-weight:400; line-height:1; box-shadow:0 12px 24px rgba(35,156,195,.3); }
+        .video-list { display:grid; gap:14px; }
+        .video-card-wrap { overflow:hidden; border:1px solid var(--line); border-radius:22px; background:var(--surface); box-shadow:var(--shadow); transition:box-shadow 180ms ease; }
+        .video-card-wrap:hover { box-shadow:0 22px 42px rgba(20,24,35,.1); }
+        .video-card { width:100%; padding:18px; border:0; background:transparent; color:var(--text); text-align:left; cursor:pointer; transition:transform 180ms ease; }
+        .video-card:hover { transform:translateY(-1px); box-shadow:0 22px 42px rgba(20,24,35,.1); }
+        .video-card:active { transform:scale(.995); }
+        .video-card[aria-expanded="true"] .chevron { transform:rotate(90deg); }
+        .video-card-top,.video-card-footer { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+        .video-title { font-size:20px; font-weight:700; line-height:1.2; }
+        .progress-pill { color:var(--sprout); font-size:15px; font-weight:700; }
+        .progress-bar { width:100%; height:8px; margin:14px 0; overflow:hidden; border-radius:999px; background:var(--sprout-soft); }
+        .progress-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--sprout),#8BC34A); transition:width 220ms ease; }
+        .stage-summary { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin-bottom:14px; }
+        .stage-summary-item { display:flex; min-width:0; flex-direction:column; gap:4px; color:var(--muted); font-size:11px; font-weight:600; line-height:1.25; }
+        .stage-symbol { display:flex; align-items:center; gap:4px; font-size:16px; }
+        .stage-state { overflow:hidden; color:var(--text-soft); text-overflow:ellipsis; white-space:nowrap; }
+        .status-complete { color:var(--sprout); }.status-progress { color:#BF8500; }.status-review { color:#BF8500; }.status-editing { color:var(--accent); }.status-changes,.status-rejected { color:#D54A4A; }.status-pending { color:var(--muted); }
+        .video-meta { color:var(--text-soft); font-size:12px; font-weight:500; }.chevron { color:var(--muted); font-size:21px; line-height:1; }
+        .detail-top { margin-bottom:18px; }.back-link { display:inline-flex; align-items:center; margin-bottom:14px; padding:8px 12px; min-height:36px; background:var(--surface-muted); color:var(--text); box-shadow:none; }
+        .accordion-details { padding:0 18px 18px; border-top:1px solid var(--line); }.accordion-details .detail-hero { margin:16px 0 14px; }
+        .detail-hero,.detail-section { padding:20px; border:1px solid var(--line); border-radius:22px; background:var(--surface); box-shadow:var(--shadow); }
+        .detail-hero { margin-bottom:14px; }.detail-title { margin-bottom:8px; font-size:28px; letter-spacing:-.02em; }.detail-progress { display:flex; justify-content:space-between; color:var(--text-soft); font-size:13px; font-weight:600; }
+        .detail-workflow { display:grid; gap:14px; }.detail-section { box-shadow:none; }.section-heading { display:flex; align-items:center; gap:8px; margin-bottom:10px; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.14em; }
+        .task-row { display:flex; align-items:center; gap:12px; min-height:46px; cursor:pointer; }.task-row + .task-row { border-top:1px solid var(--line); }.task-row input { width:19px; height:19px; accent-color:var(--sprout); }.task-row.completed .task-label { color:var(--text-soft); text-decoration:line-through; }.task-label { font-size:15px; font-weight:500; }
+        .editing-card { display:grid; gap:12px; padding-top:4px; }.editing-summary { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:2px 0 4px; }.eyebrow { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }.version-name { margin-top:3px; font-size:20px; font-weight:700; }.status-badge { display:inline-flex; align-items:center; padding:6px 9px; border-radius:999px; background:var(--surface-muted); font-size:12px; font-weight:700; }.editing-meta { color:var(--text-soft); font-size:13px; line-height:1.45; }.latest-comment-card { padding:12px 14px; border:1px solid var(--line); border-radius:16px; background:var(--surface-muted); }.comment-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }.comment-author-block { margin-bottom:4px; font-size:13px; font-weight:700; }.comment-role-pill { display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; background:#fff; color:var(--text-soft); font-size:11px; font-weight:700; }.comment-message { color:var(--text-soft); font-size:14px; line-height:1.5; }.comment-form { display:grid; gap:10px; }.comment-textarea { width:100%; min-height:84px; padding:11px 12px; border:1px solid var(--line); border-radius:14px; outline:0; background:var(--surface-muted); resize:vertical; }.comment-textarea:focus { border-color:var(--accent); box-shadow:0 0 0 4px rgba(35,156,195,.12); }.comment-form-row { display:flex; gap:10px; align-items:center; }.member-select { flex:1; min-height:44px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:var(--surface-muted); color:var(--text); outline:0; }.member-select:focus { border-color:var(--accent); box-shadow:0 0 0 4px rgba(35,156,195,.12); }.editing-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }.secondary-btn { min-height:44px; padding:10px 12px; border:1px solid var(--line); border-radius:999px; background:var(--surface); color:var(--text); font-weight:600; cursor:pointer; }.secondary-btn:hover { background:var(--surface-muted); }.empty-state { padding:28px; border:1px dashed var(--line); border-radius:22px; color:var(--text-soft); text-align:center; }
+        .modal-backdrop { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:16px; background:rgba(20,24,35,.4); animation:fadeIn 180ms ease; }.modal-card { width:min(100%,480px); max-height:min(88vh,760px); padding:20px; border:1px solid var(--line); border-radius:24px; background:#fff; box-shadow:var(--shadow); animation:slideUp 220ms ease; overflow:hidden; display:flex; flex-direction:column; }.modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }.modal-title { margin-bottom:6px; font-size:20px; font-weight:700; }.modal-copy { color:var(--text-soft); font-size:14px; }.modal-close { border:0; width:36px; height:36px; border-radius:50%; background:var(--surface-muted); color:var(--text); font-size:20px; cursor:pointer; }.modal-body { display:grid; gap:12px; overflow:auto; padding-right:4px; }.modal-list { display:grid; gap:10px; }.modal-version-item,.modal-comment-item { padding:12px 14px; border:1px solid var(--line); border-radius:16px; background:var(--surface-muted); }.modal-version-row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }.modal-label { color:var(--text-soft); font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }.modal-value { color:var(--text); font-size:14px; font-weight:600; }.modal-comment-item { display:grid; gap:8px; }.modal-comment-head { display:flex; align-items:center; gap:10px; }.modal-avatar { width:34px; height:34px; flex-shrink:0; display:grid; place-items:center; border-radius:50%; background:var(--accent); color:#fff; font-size:13px; font-weight:700; }.modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }.ghost-btn,.primary-btn { min-height:44px; padding:10px 14px; border:0; border-radius:999px; font-weight:600; cursor:pointer; }.ghost-btn { background:var(--surface-muted); color:var(--text); }.primary-btn { background:var(--accent); color:#fff; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        @keyframes slideUp { from { transform:translateY(8px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        @media (max-width: 640px) { body { padding:0 12px calc(96px + env(safe-area-inset-bottom)); }.header { gap:10px; padding:10px 0; }.brand-logo { width:40px; height:40px; }.app-title { font-size:23px; }.header-copy { display:none; }.header-progress { flex-direction:column; align-items:flex-end; gap:0; }.header-new-video-btn { display: none; }.new-video-fab { display: inline-flex; }.video-card { padding:16px; }.video-title { font-size:17px; }.stage-summary { gap:4px; }.stage-summary-item { font-size:10px; }.stage-symbol { font-size:15px; }.stage-state { display:none; }.detail-hero,.detail-section { padding:17px; }.detail-title { font-size:22px; }.task-label { font-size:14px; }.version-name { font-size:18px; }.modal-backdrop { padding:0; align-items:end; }.modal-card { width:100%; max-width:none; padding:18px 16px 20px; border-radius:24px 24px 0 0; animation:slideUpMobile 220ms ease; } .comment-form-row { flex-direction:column; align-items:stretch; } .editing-actions { grid-template-columns:1fr; } }
+        @keyframes slideUpMobile { from { transform:translateY(18px); opacity:0; } to { transform:translateY(0); opacity:1; } }
     </style>
-
 </head>
-
 <body>
-
-<div class="container">
-
-    <div class="header">
-        <div class="brand-row">
-            <img class="brand-logo" src="assets/logo_new.png" alt="Giggle Sprouts logo">
-            <h1>SproutOps</h1>
-        </div>
-        <p>Operations center for Giggle Sprouts</p>
-    </div>
-
-    <div class="progress-card">
-
-        <strong>Today's Progress</strong>
-
-        <p>8 / 14 Tasks Complete</p>
-
-        <div class="progress">
-            <div class="progress-fill"></div>
-        </div>
-
-    </div>
-
-    <div class="task-card">
-
-        <div class="task">
-            <input type="checkbox">
-            <div class="task-text">
-                <div class="task-title">Script Complete</div>
-                <div class="task-sub">Updated 10 mins ago</div>
-            </div>
-            <span class="badge done">DONE</span>
-        </div>
-
-        <div class="task">
-            <input type="checkbox">
-            <div class="task-text">
-                <div class="task-title">Producer Review</div>
-                <div class="task-sub">Waiting for review</div>
-            </div>
-            <span class="badge ready">READY</span>
-        </div>
-
-        <div class="task">
-            <input type="checkbox">
-            <div class="task-text">
-                <div class="task-title">Actor Recording</div>
-                <div class="task-sub">Starts today</div>
-            </div>
-            <span class="badge waiting">WAITING</span>
-        </div>
-
-        <div class="task">
-            <input type="checkbox">
-            <div class="task-text">
-                <div class="task-title">Edit Video</div>
-                <div class="task-sub">Pending</div>
-            </div>
-            <span class="badge waiting">WAITING</span>
-        </div>
-
-        <div class="task">
-            <input type="checkbox">
-            <div class="task-text">
-                <div class="task-title">Thumbnail</div>
-                <div class="task-sub">Pending</div>
-            </div>
-            <span class="badge waiting">WAITING</span>
-        </div>
-
-    </div>
-
-</div>
-
+    <div id="app"></div>
+    <script>
+        const now = () => new Date().toISOString();
+        const makeTask = (id, title, completed = false) => ({ id, title, completed, updatedAt: now() });
+        const createVideoWorkflow = () => ({
+            preProduction: { tasks: [makeTask('script', 'Script Complete')] },
+            production: { tasks: [makeTask('shoot', 'Shoot'), makeTask('voice-recording', 'Voice Recording')] },
+            editing: { activeVersionId: null, versions: [] },
+            publishing: { tasks: [makeTask('thumbnail', 'Thumbnail'), makeTask('metadata', 'Metadata'), makeTask('publish', 'Publish')] }
+        });
+        const initialVideos = [
+            { id:'video-1', title:'ABC Song', createdAt:'2026-07-12T09:00:00.000Z', updatedAt:'2026-07-16T08:00:00.000Z', preProduction:{ tasks:[makeTask('script','Script Complete',true)] }, production:{ tasks:[makeTask('shoot','Shoot',true),makeTask('voice-recording','Voice Recording',true)] }, editing:{ activeVersionId:'abc-v2', versions:[{ id:'abc-v2', versionNumber:2, status:'needs-review', createdAt:'2026-07-16T08:00:00.000Z', updatedAt:'2026-07-16T08:00:00.000Z', comments:[{ id:'abc-c1',author:'Sarah',role:'Editor',message:'Reduced intro and added classroom background.',createdAt:'2026-07-16T07:00:00.000Z'},{ id:'abc-c2',author:'Roshan',role:'Producer',message:'Please zoom the apple.',createdAt:'2026-07-16T08:00:00.000Z'}] },{ id:'abc-v1',versionNumber:1,status:'approved',createdAt:'2026-07-14T08:00:00.000Z',updatedAt:'2026-07-15T08:00:00.000Z',comments:[] }] }, publishing:{ tasks:[makeTask('thumbnail','Thumbnail'),makeTask('metadata','Metadata'),makeTask('publish','Publish')] } },
+            { id:'video-2', title:'Morning Routine', createdAt:'2026-07-14T10:30:00.000Z', updatedAt:'2026-07-16T07:15:00.000Z', preProduction:{ tasks:[makeTask('script','Script Complete',true)] }, production:{ tasks:[makeTask('shoot','Shoot',true),makeTask('voice-recording','Voice Recording',true)] }, editing:{ activeVersionId:'routine-v1',versions:[{ id:'routine-v1',versionNumber:1,status:'approved',createdAt:'2026-07-16T07:00:00.000Z',updatedAt:'2026-07-16T07:15:00.000Z',comments:[{id:'routine-c1',author:'Sarah',role:'Editor',message:'Final cut is ready for publishing.',createdAt:'2026-07-16T07:15:00.000Z'}] }] }, publishing:{ tasks:[makeTask('thumbnail','Thumbnail'),makeTask('metadata','Metadata'),makeTask('publish','Publish')] } }
+        ];
+        const state = { videos:initialVideos, modalOpen:false, draftTitle:'', expandedVideoId:null, editingMessage:'', activeEditingModal:null, activeModalVideoId:null, commentDrafts:{}, selectedMember:'Roshan' };
+        const escapeHtml = (value) => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+        const formatTime = (value) => new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(new Date(value));
+        const getActiveVersion = (video) => video.editing.versions.find((version) => version.id === video.editing.activeVersionId) || [...video.editing.versions].sort((a,b) => b.versionNumber-a.versionNumber)[0];
+        const getTaskStatus = (tasks) => tasks.every((task) => task.completed) ? 'complete' : tasks.some((task) => task.completed) ? 'progress' : 'pending';
+        const getProgress = (video) => { const tasks=[...video.preProduction.tasks,...video.production.tasks,...video.publishing.tasks]; const active=getActiveVersion(video); const completed=tasks.filter((task)=>task.completed).length+(active?.status==='approved'?1:0); const total=tasks.length+1; return { completed,total,percentage:Math.round(completed/total*100) }; };
+        const getOrderedVideos = () => [...state.videos].sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+        const getVideoNumber = (video, orderedVideos) => orderedVideos.findIndex((entry) => entry.id === video.id) + 1;
+        const getOverallProgress = () => state.videos.reduce((total,video) => { const progress=getProgress(video); return {completed:total.completed+progress.completed,total:total.total+progress.total}; },{completed:0,total:0});
+        const editingStatus = (version) => ({ approved:['complete','✓','Approved'], 'needs-review':['review','🟡',`Version ${version?.versionNumber || ''} Ready`], editing:['editing','🔵','Editing'], 'changes-requested':['changes','🔴','Changes Requested'], rejected:['rejected','🔴','Rejected'] }[version?.status] || ['pending','○','Not Started']);
+        const teamMembers = [{ name:'Sarah', role:'Editor' }, { name:'Roshan', role:'Producer' }, { name:'Anjana', role:'Producer' }];
+        const getInitials = (name='') => name.split(' ').filter(Boolean).slice(0,2).map((segment)=>segment[0]||'').join('').toUpperCase();
+        const formatRelativeTime = (value) => { if(!value)return'—'; const diff=Date.now()-new Date(value).getTime(); const minutes=Math.max(1,Math.round(diff/60000)); if(minutes<60)return`${minutes} min ago`; const hours=Math.round(minutes/60); if(hours<24)return`${hours} hr ago`; const days=Math.round(hours/24); return`${days} day${days===1?'':'s'} ago`; };
+        const getLatestComment = (video) => { const active=getActiveVersion(video); const comments=[...(active?.comments || [])].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); return comments[0] || null; };
+        const getVersionAuthor = (version) => { const sorted=[...(version?.comments || [])].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); return sorted[0]?.author || 'System'; };
+        const stageSummary = (video) => { const active=getActiveVersion(video); const shoot=video.production.tasks.find((task)=>task.id==='shoot'); const voice=video.production.tasks.find((task)=>task.id==='voice-recording'); const edit=editingStatus(active); return [ ['📝','Pre-production',getTaskStatus(video.preProduction.tasks),''], ['🎥','Production',shoot?.completed?'complete':'pending',''], ['🎤','Voice Recording',voice?.completed?'complete':'pending',''], ['✂️','Editing',edit[0],edit[1]+' '+edit[2]], ['🚀','Publishing',getTaskStatus(video.publishing.tasks),''] ]; };
+        const renderStageSummary = (video) => `<div class="stage-summary" aria-label="Production pipeline">${stageSummary(video).map(([icon,title,status,label])=>`<div class="stage-summary-item status-${status}" title="${escapeHtml(title)}: ${escapeHtml(label || status)}"><div class="stage-symbol">${icon} <span>${label ? '' : status==='complete'?'✓':status==='pending'?'○':'🟡'}</span></div><span class="stage-state">${escapeHtml(label || title)}</span></div>`).join('')}</div>`;
+        const renderTaskSection = (title, icon, area, tasks, video) => `<section class="detail-section"><div class="section-heading">${icon} ${title}</div>${tasks.map((task)=>`<label class="task-row ${task.completed?'completed':''}"><input type="checkbox" data-action="toggle-task" data-video-id="${video.id}" data-area="${area}" data-task-id="${task.id}" ${task.completed?'checked':''}><span class="task-label">${escapeHtml(task.title)}</span></label>`).join('')}</section>`;
+        function renderEditingWorkspace(video) { const active=getActiveVersion(video); const status=editingStatus(active); const latestComment=getLatestComment(video); const latestCommentAuthor=latestComment?.author || 'No comments yet'; const latestCommentRole=latestComment?.role || '—'; const latestCommentMessage=latestComment?.message || 'Leave the first note for this version.'; const latestCommentTime=latestComment?.createdAt ? formatRelativeTime(latestComment.createdAt) : '—'; const memberOptions=teamMembers.map((person)=>`<option value="${escapeHtml(person.name)}" ${state.selectedMember===person.name?'selected':''}>${escapeHtml(person.name)} (${escapeHtml(person.role)})</option>`).join(''); return `<section class="detail-section editing-card"><div class="section-heading">✂️ EDITING</div><div class="editing-summary"><div><div class="eyebrow">Latest version</div><div class="version-name">${active?`Version ${active.versionNumber}`:'No versions yet'}</div><div class="editing-meta">Status ${status[2]} • Updated ${active?formatRelativeTime(active.updatedAt):'—'}</div></div><span class="status-badge status-${status[0]}">${status[1]} ${status[2]}</span></div><div class="latest-comment-card"><div class="comment-header"><div class="eyebrow">Latest comment</div><span class="comment-role-pill">${escapeHtml(latestCommentRole)}</span></div><div class="comment-author-block">${escapeHtml(latestCommentAuthor)}</div><div class="comment-message">${escapeHtml(latestCommentMessage)}</div><div class="editing-meta" style="margin-top:6px;">${escapeHtml(latestCommentTime)}</div></div><form class="comment-form" data-action="post-comment" data-video-id="${video.id}"><textarea class="comment-textarea" name="message" placeholder="Write a comment...">${escapeHtml(state.commentDrafts[video.id] || '')}</textarea><div class="comment-form-row"><select class="member-select" name="member">${memberOptions}</select><button class="comment-submit-btn primary-btn" type="submit">Post Comment</button></div></form><div class="editing-actions"><button class="secondary-btn" type="button" data-action="open-version-history" data-video-id="${video.id}">Version History</button><button class="secondary-btn" type="button" data-action="open-discussion" data-video-id="${video.id}">Discussion</button></div></section>`; }
+        function renderBoard() { const overall=getOverallProgress(); const orderedVideos=getOrderedVideos(); return `<div class="page-shell"><header class="header"><div class="brand-row"><img class="brand-logo" src="assets/logo_new.png" alt="Giggle Sprouts logo"><div><div class="app-title">SproutOps</div><div class="header-copy">Production operating system</div></div></div><div class="header-progress" aria-label="Overall progress"><span>Overall</span><strong>${overall.completed}/${overall.total}</strong></div><button class="new-video-btn header-new-video-btn" type="button" data-action="open-modal">+ New Video</button></header><main class="video-list">${orderedVideos.length?orderedVideos.map((video)=>{const progress=getProgress(video);const expanded=state.expandedVideoId===video.id;const serial=getVideoNumber(video, orderedVideos);return `<section class="video-card-wrap"><button class="video-card" type="button" data-action="toggle-video" data-video-id="${video.id}" aria-expanded="${expanded}" aria-label="${expanded?'Collapse':'Expand'} ${escapeHtml(video.title)} workflow"><div class="video-card-top"><div class="video-title">#${serial} ${escapeHtml(video.title)}</div><div class="progress-pill">${progress.percentage}%</div></div><div class="progress-bar"><div class="progress-fill" style="width:${progress.percentage}%"></div></div>${renderStageSummary(video)}<div class="video-card-footer"><span class="video-meta">Updated ${formatTime(video.updatedAt)}</span><span class="chevron">›</span></div></button>${expanded?renderAccordionDetails(video):''}</section>`;}).join(''):'<div class="empty-state">No videos yet. Create your first one.</div>'}</main></div>`; }
+        function renderDetails(video) { const progress=getProgress(video); return `<div class="page-shell"><header class="header"><div class="brand-row"><img class="brand-logo" src="assets/logo_new.png" alt="Giggle Sprouts logo"><div><div class="app-title">SproutOps</div><div class="header-copy">Production operating system</div></div></div><button class="new-video-btn header-new-video-btn" type="button" data-action="open-modal">+ New Video</button></header><main><div class="detail-top"><button class="back-link" type="button" data-action="back-to-board">← All videos</button><section class="detail-hero"><h1 class="detail-title">${escapeHtml(video.title)}</h1><div class="detail-progress"><span>Production progress</span><strong>${progress.percentage}% complete</strong></div><div class="progress-bar"><div class="progress-fill" style="width:${progress.percentage}%"></div></div></section></div><div class="detail-workflow">${renderTaskSection('PRE-PRODUCTION','📝','preProduction',video.preProduction.tasks,video)}${renderTaskSection('PRODUCTION','🎥','production',video.production.tasks,video)}${renderEditingWorkspace(video)}${renderTaskSection('PUBLISHING','🚀','publishing',video.publishing.tasks,video)}</div></main></div>`; }
+        function renderAccordionDetails(video) { return `<div class="accordion-details"><div class="detail-workflow">${renderTaskSection('PRE-PRODUCTION','📝','preProduction',video.preProduction.tasks,video)}${renderTaskSection('PRODUCTION','🎥','production',video.production.tasks,video)}${renderEditingWorkspace(video)}${renderTaskSection('PUBLISHING','🚀','publishing',video.publishing.tasks,video)}</div></div>`; }
+        function renderModal() { return state.modalOpen?`<div class="modal-backdrop" data-action="close-modal"><div class="modal-card" role="dialog" aria-modal="true" aria-label="Create new video"><div class="modal-header"><div><div class="modal-title">New Video</div><div class="modal-copy">Create a fresh production workflow in seconds.</div></div></div><form id="new-video-form"><input id="video-title-input" class="modal-input" name="title" type="text" placeholder="Video title" value="${escapeHtml(state.draftTitle)}" required><div class="modal-actions"><button class="ghost-btn" type="button" data-action="close-modal">Cancel</button><button class="primary-btn" type="submit">Create</button></div></form></div></div>`:''; }
+        function renderEditingModal() { if(!state.activeEditingModal||!state.activeModalVideoId)return ''; const video=state.videos.find((entry)=>entry.id===state.activeModalVideoId); if(!video)return ''; const active=getActiveVersion(video); const versions=[...video.editing.versions].sort((a,b)=>b.versionNumber-a.versionNumber); const comments=[...(active?.comments || [])].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); if(state.activeEditingModal==='version-history'){ return `<div class="modal-backdrop" data-action="close-editing-modal"><div class="modal-card" role="dialog" aria-modal="true" aria-label="Version history"><div class="modal-header"><div><div class="modal-title">Version History</div><div class="modal-copy">${escapeHtml(video.title)}</div></div><button class="modal-close" type="button" data-action="close-editing-modal" aria-label="Close">×</button></div><div class="modal-body"><div class="modal-list">${versions.length?versions.map((version)=>{ const item=editingStatus(version); return `<div class="modal-version-item"><div class="modal-version-row"><div class="modal-value">Version ${version.versionNumber}</div><span class="status-badge status-${item[0]}">${item[1]} ${item[2]}</span></div><div class="modal-label">Updated</div><div class="modal-value">${formatTime(version.updatedAt)}</div><div class="modal-label">Created By</div><div class="modal-value">${escapeHtml(getVersionAuthor(version))}</div></div>`; }).join(''):'<div class="modal-version-item"><div class="modal-value">No versions yet.</div></div>'}</div></div></div></div>`; }
+        return `<div class="modal-backdrop" data-action="close-editing-modal"><div class="modal-card" role="dialog" aria-modal="true" aria-label="Discussion"><div class="modal-header"><div><div class="modal-title">Discussion</div><div class="modal-copy">${escapeHtml(video.title)}</div></div><button class="modal-close" type="button" data-action="close-editing-modal" aria-label="Close">×</button></div><div class="modal-body"><div class="modal-list">${comments.length?comments.map((comment)=>`<div class="modal-comment-item"><div class="modal-comment-head"><div class="modal-avatar">${escapeHtml(getInitials(comment.author))}</div><div><div class="modal-value">${escapeHtml(comment.author)}</div><div class="modal-copy">${escapeHtml(comment.role)} • ${escapeHtml(formatRelativeTime(comment.createdAt))}</div></div></div><div class="comment-message">${escapeHtml(comment.message)}</div></div>`).join(''):'<div class="modal-version-item"><div class="modal-value">No comments yet.</div></div>'}</div><form class="comment-form" data-action="post-comment-modal" data-video-id="${video.id}"><textarea class="comment-textarea" name="message" placeholder="Write a comment...">${escapeHtml(state.commentDrafts[video.id] || '')}</textarea><div class="comment-form-row"><select class="member-select" name="member">${teamMembers.map((person)=>`<option value="${escapeHtml(person.name)}" ${state.selectedMember===person.name?'selected':''}>${escapeHtml(person.name)} (${escapeHtml(person.role)})</option>`).join('')}</select><button class="comment-submit-btn primary-btn" type="submit">Post Comment</button></div></form></div></div></div>`; }
+        function render() { document.getElementById('app').innerHTML=`${renderBoard()}<button class="new-video-btn new-video-fab" type="button" data-action="open-modal" aria-label="New Video">+</button>${renderModal()}${renderEditingModal()}`; bindEvents(); }
+        function bindEvents() { document.querySelectorAll('[data-action="open-modal"]').forEach((button)=>button.addEventListener('click',()=>{state.modalOpen=true;state.draftTitle='';render();document.getElementById('video-title-input')?.focus();})); document.querySelectorAll('[data-action="close-modal"]').forEach((element)=>element.addEventListener('click',(event)=>{if(event.target===event.currentTarget||event.target.dataset.action==='close-modal'){state.modalOpen=false;render();}})); document.querySelectorAll('[data-action="toggle-video"]').forEach((card)=>card.addEventListener('click',()=>{state.expandedVideoId=state.expandedVideoId===card.dataset.videoId?null:card.dataset.videoId;state.editingMessage='';render();})); document.querySelectorAll('[data-action="toggle-task"]').forEach((checkbox)=>checkbox.addEventListener('change',(event)=>{const {videoId,area,taskId}=event.target.dataset;const video=state.videos.find((entry)=>entry.id===videoId);const task=video?.[area]?.tasks.find((entry)=>entry.id===taskId);if(!task)return;task.completed=event.target.checked;task.updatedAt=now();video.updatedAt=now();render();})); document.querySelectorAll('textarea[name="message"]').forEach((textarea)=>{ const videoId=textarea.closest('[data-video-id]')?.dataset.videoId; if(!videoId)return; textarea.addEventListener('input',()=>{state.commentDrafts[videoId]=textarea.value;}); }); document.querySelectorAll('[data-action="open-version-history"]').forEach((button)=>button.addEventListener('click',()=>{state.activeEditingModal='version-history';state.activeModalVideoId=button.dataset.videoId;render();})); document.querySelectorAll('[data-action="open-discussion"]').forEach((button)=>button.addEventListener('click',()=>{state.activeEditingModal='discussion';state.activeModalVideoId=button.dataset.videoId;render();})); document.querySelectorAll('[data-action="close-editing-modal"]').forEach((element)=>element.addEventListener('click',(event)=>{if(event.target===event.currentTarget||event.target.dataset.action==='close-editing-modal'){state.activeEditingModal=null;state.activeModalVideoId=null;render();}})); document.querySelectorAll('form[data-action="post-comment"],form[data-action="post-comment-modal"]').forEach((form)=>form.addEventListener('submit',(event)=>{event.preventDefault();const {videoId}=form.dataset;const video=state.videos.find((entry)=>entry.id===videoId);if(!video)return;const active=getActiveVersion(video);if(!active){state.editingMessage='Create a version first to leave a comment.';render();return;}const message=new FormData(form).get('message')?.toString().trim();const member=new FormData(form).get('member')?.toString().trim();if(!message||!member)return;state.selectedMember=member;active.comments=[...(active.comments||[]),{id:`comment-${Date.now()}`,author:member,role:teamMembers.find((person)=>person.name===member)?.role || 'Member',message,createdAt:now()}];video.updatedAt=now();state.commentDrafts[videoId]='';render();})); const form=document.getElementById('new-video-form');if(form)form.addEventListener('submit',(event)=>{event.preventDefault();const title=new FormData(form).get('title')?.toString().trim();if(!title)return;state.videos.push({id:`video-${Date.now()}`,title,createdAt:now(),updatedAt:now(),...createVideoWorkflow()});state.expandedVideoId=null;state.modalOpen=false;state.draftTitle='';render();}); }
+        if(!window.__sproutopsEscapeHandler){ window.__sproutopsEscapeHandler=true; document.addEventListener('keydown',(event)=>{ if(event.key==='Escape' && (state.activeEditingModal||state.modalOpen)){ if(state.activeEditingModal){state.activeEditingModal=null;state.activeModalVideoId=null;} else {state.modalOpen=false;} render(); } }); }
+        render();
+        let knownLastModified=null; async function checkForUpdates(){try{const response=await fetch(window.location.href,{cache:'no-store'});const lastModified=response.headers.get('last-modified');if(!knownLastModified){knownLastModified=lastModified;return;}if(lastModified&&lastModified!==knownLastModified)window.location.reload();}catch(error){console.debug('Auto-refresh check failed:',error);}} if(window.location.protocol!=='file:')setInterval(checkForUpdates,2000);
+    </script>
 </body>
 </html>
