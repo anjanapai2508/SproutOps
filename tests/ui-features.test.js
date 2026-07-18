@@ -1,32 +1,28 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const htmlPath = path.resolve(__dirname, '../app/index.html');
-const html = fs.readFileSync(htmlPath, 'utf8');
-const scriptContent = html.match(/<script>([\s\S]*)<\/script>/)?.[1] || '';
+const html = fs.readFileSync('app/index.html', 'utf8');
+const main = fs.readFileSync('app/src/main.js', 'utf8');
 
 describe('SproutOps UI features', () => {
-  it('renders serial-numbered video cards in the board view', () => {
-    expect(html).toContain('#${serial}');
-    expect(scriptContent).toContain('getVideoNumber(video, orderedVideos)');
-    expect(scriptContent).toContain('getOrderedVideos');
+  it('keeps responsive desktop and mobile New Video actions', () => {
+    expect(main).toContain('header-new-video-btn');
+    expect(main).toContain('new-video-fab');
+    expect(html).toContain('.header-new-video-btn { display:none; }');
+    expect(html).toContain('.new-video-fab { display:inline-grid;');
   });
 
-  it('includes a compact editing summary with comment composer and action buttons', () => {
-    expect(scriptContent).toContain('function renderEditingWorkspace(video)');
-    expect(scriptContent).toContain('data-action="open-version-history"');
-    expect(scriptContent).toContain('data-action="open-discussion"');
-    expect(scriptContent).toContain('placeholder="Write a comment..."');
+  it('renders sequence-numbered database video cards', () => {
+    expect(main).toContain('#${video.sequence_number}');
+    expect(main).toContain('VIDEO_STAGE_LABELS[video.current_stage]');
+    expect(main).toContain('NEXT_ACTION_LABELS[video.next_action]');
+    expect(main).toContain('video.next_action_note');
+    expect(main).toContain('video.updated_at');
   });
 
-  it('uses a simplified accordion detail view without the old progress hero block', () => {
-    expect(scriptContent).toContain('function renderAccordionDetails(video)');
-    expect(scriptContent).toContain('return `<div class="accordion-details"><div class="detail-workflow">');
-    expect(scriptContent).not.toContain('function renderAccordionDetails(video) { const progress');
-    expect(scriptContent).not.toContain('return `<div class="accordion-details"><section class="detail-hero">');
+  it('renders connected workflow task and editing data', () => {
+    expect(main).toContain('video.video_tasks');
+    expect(main).toContain('video.edit_versions');
+    expect(main).toContain('version.edit_comments');
   });
 });

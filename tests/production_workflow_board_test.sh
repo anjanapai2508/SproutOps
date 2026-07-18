@@ -1,17 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-rg -q 'preProduction:' app/index.html
-rg -q 'production:' app/index.html
-rg -q 'editing:' app/index.html
-rg -q 'versions:' app/index.html
-rg -q 'comments:' app/index.html
-rg -q 'publishing:' app/index.html
-rg -q 'renderBoard' app/index.html
-rg -q 'renderDetails' app/index.html
-rg -q 'stage-summary' app/index.html
-rg -q 'Version History' app/index.html
-rg -q 'Latest discussion' app/index.html
-rg -q 'Create New Version' app/index.html
-rg -q 'Metadata' app/index.html
-rg -q 'data-action="back-to-board"' app/index.html
+rg -q "from\('videos'\)" app/src/services/videos.js
+rg -q "is\('archived_at', null\)" app/src/services/videos.js
+rg -q "order\('sequence_number', \{ ascending: true \}\)" app/src/services/videos.js
+rg -q 'video_tasks' app/src/services/videos.js
+rg -q 'edit_versions!edit_versions_video_id_fkey' app/src/services/videos.js
+! rg -q "from\('(video_tasks|profiles|roles|profile_roles|edit_versions|edit_comments)'\)" app/src
