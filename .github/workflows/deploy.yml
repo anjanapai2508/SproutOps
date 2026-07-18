@@ -1,0 +1,26 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      # Step 1: Clones your new code (including the /app directory) into the runner workspace
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Launches the Nginx container directly from the runner workspace
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose up -d --build --remove-orphans
+
+      # Step 3: Cleans up old image fragments
+      - name: Purge Old Images
+        run: |
+          docker image prune -f
+
