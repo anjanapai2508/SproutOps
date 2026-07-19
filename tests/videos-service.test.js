@@ -8,10 +8,6 @@ const row = {
   next_action_note: null, next_action_updated_at: '2026-07-18T10:00:00Z',
   created_by: null, published_at: null, created_at: '2026-07-18T10:00:00Z',
   updated_at: '2026-07-18T10:00:00Z', archived_at: null,
-  video_tasks: [
-    { id: 'task-2', stage: 'production', sort_order: 2, title: 'Record voice', is_completed: false },
-    { id: 'task-1', stage: 'pre_production', sort_order: 1, title: 'Write script', is_completed: true }
-  ],
   edit_versions: []
 };
 
@@ -35,7 +31,7 @@ describe('videos service', () => {
 
     await expect(createVideosService(client).getVideos()).resolves.toEqual([row]);
     expect(client.from).toHaveBeenCalledWith('videos');
-    expect(query.select).toHaveBeenCalledWith('*, video_tasks(*), edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))');
+    expect(query.select).toHaveBeenCalledWith('*, edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))');
     expect(query.is).toHaveBeenCalledWith('archived_at', null);
     expect(query.order).toHaveBeenCalledWith('sequence_number', { ascending: true });
   });

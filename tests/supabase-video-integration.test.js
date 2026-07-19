@@ -55,18 +55,20 @@ describe('Supabase videos-only integration', () => {
     expect(packageJson.scripts.build).toBe('vite build --config vite.config.js');
     expect(packageJson.scripts.preview).toBe('vite preview --config vite.config.js');
     expect(viteConfig).toContain("root: 'app'");
-    expect(viteConfig).toContain("envDir: '.'");
+    expect(viteConfig).toContain("envDir: '..'");
   });
 
-  it('keeps write controls visible but guards them behind authentication', () => {
+  it('protects the dashboard behind the restored authentication session', () => {
     expect(main).toContain("from './services/auth.js'");
-    expect(main).toContain('await requireAuthenticated()');
-    expect(main).toContain('Sign in is required to manage videos.');
+    expect(main).toContain('state.isAuthLoading');
+    expect(main).toContain("const skipLogin = import.meta.env.DEV && import.meta.env.VITE_APP_MODE === 'development';");
+    expect(main).toContain('else if(!skipLogin&&!state.session)');
+    expect(main).toContain('initializeAuth()');
     expect(authService).toContain('client.auth.getSession()');
   });
 
-  it('starts loading without requiring unsupported top-level await', () => {
-    expect(main).toContain('\nloadVideos();');
+  it('starts authentication without requiring unsupported top-level await', () => {
+    expect(main).toContain('\ninitializeAuth();');
     expect(main).not.toContain('\nawait loadVideos();');
   });
 });

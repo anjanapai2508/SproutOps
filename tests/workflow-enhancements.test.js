@@ -16,7 +16,8 @@ describe('video mutations', () => {
   });
 
   it('connects title and description updates', () => {
-    expect(main).toContain("await updateVideo(id,{title,description:");
+    expect(main).toContain('await updateVideo(id,{title})');
+    expect(main).not.toContain('<span>Description</span>');
     expect(main).toContain('Could not save the changes.');
   });
 

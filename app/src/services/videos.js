@@ -15,7 +15,7 @@ export function createVideosService(client) {
     async getVideos() {
       const result = await client
         .from('videos')
-        .select('*, video_tasks(*), edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))')
+        .select('*, edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))')
         .is('archived_at', null)
         .order('sequence_number', { ascending: true });
       return unwrap(result) || [];

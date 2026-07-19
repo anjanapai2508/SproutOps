@@ -23,6 +23,20 @@ export type VideoNextAction =
   | 'publish_video'
   | 'no_action_required';
 
+export interface VideoTask {
+  id: string;
+  video_id: string;
+  task_key: string;
+  title: string;
+  stage: VideoStage;
+  sort_order: number;
+  is_completed: boolean;
+  completed_at: string | null;
+  completed_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Video {
   id: string;
   sequence_number: number;
