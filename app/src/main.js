@@ -2,6 +2,7 @@ import { archiveVideo, createVideo, getVideos, updateVideo } from './services/vi
 import { getVideoTasks, updateVideoTaskCompletion } from './services/videoTasks.js';
 import { getSession, onAuthStateChange, sendLoginLink, signOut } from './services/auth.js';
 import { NEXT_ACTION_LABELS, VIDEO_STAGE_LABELS } from './constants/video-labels.js';
+import logoUrl from '../assets/logo_new.png';
 
 const state = { session:null, isAuthLoading:true, authStep:'email', authEmail:'', authBusy:false, authError:null, authStatus:null, resendSeconds:0, videos:[], isLoading:false, loadError:null, tasksByVideoId:{}, taskLoading:{}, taskLoadErrors:{}, pendingTaskIds:{}, taskMutationErrors:{}, modalOpen:false, isSaving:false, createError:null, createDraft:{title:'',description:''}, expandedVideoId:null, expandedSections:{}, mutationErrors:{} };
 const stageIcons = { pre_production:'📝', production:'🎥', editing:'✂️', publishing:'🚀', completed:'✓', on_hold:'⏸' };
@@ -11,7 +12,7 @@ const skipLogin = import.meta.env.DEV && import.meta.env.VITE_APP_MODE === 'deve
 const escapeHtml = (value='') => String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
 const formatDate = (value) => value ? new Intl.DateTimeFormat('en',{month:'short',day:'numeric',year:'numeric'}).format(new Date(value)) : '—';
 const sortVideos = (videos) => [...videos].sort((a,b)=>a.sequence_number-b.sequence_number);
-const header = () => `<header class="header"><div class="brand-row"><img class="brand-logo" src="assets/logo_new.png" alt="Giggle Sprouts logo"><div><div class="app-title">SproutOps</div><div class="header-copy">Production operating system</div></div></div><div class="header-actions"><button class="new-video-btn header-new-video-btn" type="button" data-action="open-modal">+ New Video</button><div class="account-control"><span class="account-email">${escapeHtml(state.session?.user?.email || '')}</span><button class="secondary-btn sign-out-btn" type="button" data-action="sign-out">Sign out</button></div></div></header>`;
+const header = () => `<header class="header"><div class="brand-row"><img class="brand-logo" src="${logoUrl}" alt="Giggle Sprouts logo"><div><div class="app-title">SproutOps</div><div class="header-copy">Production operating system</div></div></div><div class="header-actions"><button class="new-video-btn header-new-video-btn" type="button" data-action="open-modal">+ New Video</button><div class="account-control"><span class="account-email">${escapeHtml(state.session?.user?.email || '')}</span><button class="secondary-btn sign-out-btn" type="button" data-action="sign-out">Sign out</button></div></div></header>`;
 
 function renderStages(video) {
   return `<div class="stage-summary" aria-label="Production pipeline">${pipeline.map((stage)=>`<div class="stage-summary-item ${video.current_stage===stage?'current':''}"><span class="stage-symbol">${stageIcons[stage]}</span><span class="stage-state">${escapeHtml(VIDEO_STAGE_LABELS[stage])}</span></div>`).join('')}</div>`;
@@ -67,7 +68,7 @@ function renderModal() {
 }
 
 function renderAuthLoading() {
-  return `<main class="auth-shell" aria-busy="true"><div class="auth-card auth-loading"><img class="auth-logo" src="assets/logo_new.png" alt=""><div class="app-title">SproutOps</div><p>Restoring your session…</p></div></main>`;
+  return `<main class="auth-shell" aria-busy="true"><div class="auth-card auth-loading"><img class="auth-logo" src="${logoUrl}" alt=""><div class="app-title">SproutOps</div><p>Restoring your session…</p></div></main>`;
 }
 
 function renderLogin() {
@@ -77,9 +78,9 @@ function renderLogin() {
       ? `<div id="auth-message" class="auth-message" role="status">${escapeHtml(state.authStatus)}</div>`
       : '';
   if(state.authStep==='link-sent') {
-    return `<main class="auth-shell"><section class="auth-card" aria-labelledby="auth-title"><img class="auth-logo" src="assets/logo_new.png" alt="Giggle Sprouts logo"><h1 id="auth-title">Check your email</h1><p>We sent a secure login link to:<br><strong>${escapeHtml(state.authEmail)}</strong></p><p>Open the email and click the link to continue to SproutOps.</p>${message}<div class="auth-secondary-actions"><button class="secondary-btn" type="button" data-action="resend-link" ${state.authBusy||state.resendSeconds>0?'disabled':''}>${state.resendSeconds>0?`Resend link in ${state.resendSeconds}s`:'Resend login link'}</button><button class="text-btn" type="button" data-action="change-email">Use a different email</button></div></section></main>`;
+    return `<main class="auth-shell"><section class="auth-card" aria-labelledby="auth-title"><img class="auth-logo" src="${logoUrl}" alt="Giggle Sprouts logo"><h1 id="auth-title">Check your email</h1><p>We sent a secure login link to:<br><strong>${escapeHtml(state.authEmail)}</strong></p><p>Open the email and click the link to continue to SproutOps.</p>${message}<div class="auth-secondary-actions"><button class="secondary-btn" type="button" data-action="resend-link" ${state.authBusy||state.resendSeconds>0?'disabled':''}>${state.resendSeconds>0?`Resend link in ${state.resendSeconds}s`:'Resend login link'}</button><button class="text-btn" type="button" data-action="change-email">Use a different email</button></div></section></main>`;
   }
-  return `<main class="auth-shell"><section class="auth-card" aria-labelledby="auth-title"><img class="auth-logo" src="assets/logo_new.png" alt="Giggle Sprouts logo"><h1 id="auth-title">Welcome to SproutOps</h1><p>Sign in with your email to continue.</p><form id="email-form" class="auth-form" aria-busy="${state.authBusy}"><label for="email-input">Email address</label><input id="email-input" class="form-input" name="email" type="email" autocomplete="email" value="${escapeHtml(state.authEmail)}" aria-describedby="auth-message" required><button class="primary-btn" type="submit" ${state.authBusy?'disabled':''}>${state.authBusy?'Sending…':'Send login link'}</button></form>${message}</section></main>`;
+  return `<main class="auth-shell"><section class="auth-card" aria-labelledby="auth-title"><img class="auth-logo" src="${logoUrl}" alt="Giggle Sprouts logo"><h1 id="auth-title">Welcome to SproutOps</h1><p>Sign in with your email to continue.</p><form id="email-form" class="auth-form" aria-busy="${state.authBusy}"><label for="email-input">Email address</label><input id="email-input" class="form-input" name="email" type="email" autocomplete="email" value="${escapeHtml(state.authEmail)}" aria-describedby="auth-message" required><button class="primary-btn" type="submit" ${state.authBusy?'disabled':''}>${state.authBusy?'Sending…':'Send login link'}</button></form>${message}</section></main>`;
 }
 
 function render() {
