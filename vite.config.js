@@ -2,8 +2,8 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   root: 'app',
-  // The app source lives in app/, but deployment credentials live beside this config.
-  envDir: '..',
+  // Local Vite credentials live with the app in app/.env.
+  envDir: '.',
   build: {
     outDir: '../dist',
     emptyOutDir: true

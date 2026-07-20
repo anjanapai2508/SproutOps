@@ -50,12 +50,12 @@ describe('Supabase videos-only integration', () => {
     expect(labels).toContain("no_action_required: 'No action required'");
   });
 
-  it('uses Vite positional roots for development and production builds', () => {
+  it('uses the app root and loads its environment file for Vite builds', () => {
     expect(packageJson.scripts.dev).toBe('vite --config vite.config.js');
     expect(packageJson.scripts.build).toBe('vite build --config vite.config.js');
     expect(packageJson.scripts.preview).toBe('vite preview --config vite.config.js');
     expect(viteConfig).toContain("root: 'app'");
-    expect(viteConfig).toContain("envDir: '..'");
+    expect(viteConfig).toContain("envDir: '.'");
   });
 
   it('protects the dashboard behind the restored authentication session', () => {
