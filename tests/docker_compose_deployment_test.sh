@@ -7,6 +7,7 @@ rg -Fq '${VITE_SUPABASE_URL:?Set VITE_SUPABASE_URL in the root .env file}' docke
 rg -Fq '${VITE_SUPABASE_ANON_KEY:?Set VITE_SUPABASE_ANON_KEY in the root .env file}' docker-compose.yaml
 rg -Fq 'healthcheck:' docker-compose.yaml
 rg -Fq 'COPY nginx.conf /etc/nginx/conf.d/default.conf' Dockerfile
+rg -Fq 'FROM nginx:1.30.4-alpine' Dockerfile
 rg -Fq 'try_files $uri $uri/ /index.html;' nginx.conf
 rg -Fq 'X-Content-Type-Options "nosniff"' nginx.conf
 rg -Fq 'Content-Security-Policy' nginx.conf
