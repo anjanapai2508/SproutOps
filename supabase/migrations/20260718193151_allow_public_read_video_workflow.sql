@@ -1,15 +1,3 @@
-create policy "Public can view tasks for active videos"
-on public.video_tasks
-for select
-to anon
-using (
-  exists (
-    select 1 from public.videos
-    where videos.id = video_tasks.video_id
-      and videos.archived_at is null
-  )
-);
-
 create policy "Public can view edit versions for active videos"
 on public.edit_versions
 for select

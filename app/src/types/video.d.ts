@@ -23,20 +23,6 @@ export type VideoNextAction =
   | 'publish_video'
   | 'no_action_required';
 
-export interface VideoTask {
-  id: string;
-  video_id: string;
-  task_key: string;
-  title: string;
-  stage: VideoStage;
-  sort_order: number;
-  is_completed: boolean;
-  completed_at: string | null;
-  completed_by: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface Video {
   id: string;
   sequence_number: number;
@@ -54,3 +40,8 @@ export interface Video {
   updated_at: string;
   archived_at: string | null;
 }
+
+export type EditVersionStatus = 'draft' | 'Editing' | 'In-Review' | 'Complete' | 'approved' | 'superseded';
+export interface EditVersion { id:string; video_id:string; version_number:number; status:EditVersionStatus; assigned_editor:string|null; created_by:string|null; reviewed_by:string|null; created_at:string; submitted_for_review_at:string|null; reviewed_at:string|null; }
+export interface EditComment { id:string; version_id:string; author_id:string|null; author_name_snapshot:string; author_role_snapshot:string; message:string; created_at:string; }
+export interface Profile { id:string; display_name:string|null; }
