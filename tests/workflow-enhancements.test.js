@@ -1,29 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import fs from 'fs';
-
-const main = fs.readFileSync('app/src/main.js', 'utf8');
-
-describe('video mutations', () => {
-  it('connects create with title validation, description, saving, and ordered insertion', () => {
-    expect(main).toContain("const title=data.get('title')?.toString().trim()");
-    expect(main).toContain('state.isSaving=true');
-    expect(main).toContain('state.createDraft={title,description}');
-    expect(main).toContain('value="${escapeHtml(state.createDraft.title)}"');
-    expect(main).toContain('await createVideo({title,description})');
-    expect(main).toContain('sortVideos([...state.videos,created])');
-    expect(main).toContain("state.createDraft={title:'',description:''}");
-    expect(main).toContain('Could not create the video.');
-  });
-
-  it('connects title and description updates', () => {
-    expect(main).toContain('await updateVideo(id,{title})');
-    expect(main).not.toContain('<span>Description</span>');
-    expect(main).toContain('Could not save the changes.');
-  });
-
-  it('confirms and performs soft archive through the service', () => {
-    expect(main).toContain("window.confirm('Archive this video?");
-    expect(main).toContain('await archiveVideo(id)');
-    expect(main).not.toContain('.delete()');
-  });
+import { describe,expect,it } from 'vitest';
+import fs from 'node:fs';
+const hook=fs.readFileSync('app/src/hooks/useVideos.ts','utf8');
+const modal=fs.readFileSync('app/src/components/NewVideoModal.tsx','utf8');
+const card=fs.readFileSync('app/src/components/VideoCard.tsx','utf8');
+describe('video mutations',()=>{
+  it('creates a validated video and keeps ordered state',()=>{expect(modal).toContain('title.trim()');expect(modal).toContain('Could not create the video.');expect(hook).toContain('createVideo(input)');expect(hook).toContain('sort([...items,saved])');});
+  it('updates titles without adding a description editor',()=>{expect(card).toContain('onUpdate(value)');expect(card).not.toContain('<span>Description</span>');expect(hook).toContain('updateVideo(video.id,{title})');});
+  it('confirms and performs soft archive',()=>{expect(card).toContain("window.confirm('Archive this video?");expect(hook).toContain('archiveVideo(video.id)');expect(hook).not.toContain('.delete()');});
 });

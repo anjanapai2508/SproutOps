@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createVideosService } from '../app/src/services/videos.js';
+import { createVideosService } from '../app/src/services/videos.ts';
 
 const row = {
   id: 'video-1', sequence_number: 1, title: 'Shapes', description: null,

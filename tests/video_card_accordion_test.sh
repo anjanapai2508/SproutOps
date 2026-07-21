@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-rg -q 'expandedVideoId' app/src/main.js
-rg -q 'data-action="toggle-video"' app/src/main.js
-rg -q 'renderDetails' app/src/main.js
-rg -q 'renderTaskSection' app/src/main.js
-rg -q 'renderEditingSection' app/src/main.js
-rg -q 'data-action="toggle-section"' app/src/main.js
+rg -q 'setExpanded' app/src/components/VideoCard.tsx
+rg -Fq 'aria-expanded={expanded}' app/src/components/VideoCard.tsx
+rg -q 'WorkflowSection' app/src/components/VideoCard.tsx
+rg -q 'setExpanded' app/src/components/WorkflowSection.tsx
+rg -q 'EditingDetails' app/src/components/VideoCard.tsx
+rg -Fq 'aria-expanded={expanded}' app/src/components/WorkflowSection.tsx

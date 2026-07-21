@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-rg -Fq '#${video.sequence_number}' app/src/main.js
-rg -Fq '<div class="detail-label">Updated</div><div class="detail-value">${formatDate(video.updated_at)}</div>' app/src/main.js
-! rg -Fq '<div class="updated-at">' app/src/main.js
-rg -q '<span class="chevron" aria-hidden="true">›</span>' app/src/main.js
-! rg -q 'progress\.percentage|progress-pill|progress-bar' app/src/main.js
+rg -Fq '#{video.sequence_number}' app/src/components/VideoCard.tsx
+rg -Fq 'Updated</div><div>{format(video.updated_at)}</div>' app/src/components/VideoCard.tsx
+! rg -Fq 'updated-at' app/src/components/VideoCard.tsx
+rg -q '>›</span>' app/src/components/VideoCard.tsx
+! rg -q 'progress\.percentage|progress-pill|progress-bar' app/src/components/VideoCard.tsx

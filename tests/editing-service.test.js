@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createEditingService } from '../app/src/services/editing.js';
+import { createEditingService } from '../app/src/services/editing.ts';
 
 function queryResult(result={data:null,error:null}) {
   const query={

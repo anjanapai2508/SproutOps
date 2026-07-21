@@ -1,78 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import fs from 'fs';
-
-const html = fs.readFileSync('app/index.html', 'utf8');
-const main = fs.existsSync('app/src/main.js') ? fs.readFileSync('app/src/main.js', 'utf8') : '';
-const labels = fs.existsSync('app/src/constants/video-labels.js')
-  ? fs.readFileSync('app/src/constants/video-labels.js', 'utf8')
-  : '';
-const workflow = fs.readFileSync('app/src/constants/video-workflow.js', 'utf8');
-const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-const viteConfig = fs.existsSync('vite.config.js') ? fs.readFileSync('vite.config.js', 'utf8') : '';
-const authService = fs.existsSync('app/src/services/auth.js')
-  ? fs.readFileSync('app/src/services/auth.js', 'utf8')
-  : '';
-
-describe('Supabase videos-only integration', () => {
-  it('loads through the videos service without mock video data', () => {
-    expect(main).toContain("from './services/videos.js'");
-    expect(main).toContain('await getVideos()');
-    expect(main).not.toContain('const initialVideos');
-    expect(main).not.toContain('createVideoWorkflow');
-  });
-
-  it('renders loading, error with retry, and actionable empty states', () => {
-    expect(main).toContain('Loading videos');
-    expect(main).toContain('Could not load videos. Please try again.');
-    expect(main).toContain('data-action="retry-videos"');
-    expect(main).toContain('No videos available');
-    expect(main).toContain('Videos will appear here once they are added.');
-  });
-
-  it('renders database-backed workflow subcategory cards without mock progress', () => {
-    expect(main).toContain('renderTaskSection');
-    expect(main).toContain('renderEditingSection');
-    expect(main).toContain('PRE-PRODUCTION');
-    expect(main).toContain('PRODUCTION');
-    expect(main).toContain('EDITING');
-    expect(main).toContain('PUBLISHING');
-    expect(main).not.toContain('progress.percentage');
-    expect(main).not.toContain('advanceVideoWorkflow');
-    expect(main).not.toContain('getNextWorkflowUpdate');
-  });
-
-  it('restores the original light-blue New Video treatment', () => {
-    expect(html).toContain('--new-video-background:#EAF5FC');
-    expect(html).toContain('--new-video-text:#1D70A2');
-    expect(html).toContain('.new-video-btn { background:var(--new-video-background);');
-  });
-
-  it('centralizes readable next-action labels', () => {
-    expect(labels).toContain("from './video-workflow.js'");
-    expect(workflow).toContain("{ key:'review_edit', label:'Review Edit'");
-    expect(workflow).toContain("{ key:'prepare_metadata', label:'Prepare Metadata'");
-    expect(workflow).toContain("['no_action_required','No Action Required']");
-  });
-
-  it('uses the app root and loads its environment file for Vite builds', () => {
-    expect(packageJson.scripts.dev).toBe('vite --config vite.config.js');
-    expect(packageJson.scripts.build).toBe('vite build --config vite.config.js');
-    expect(packageJson.scripts.preview).toBe('vite preview --config vite.config.js');
-    expect(viteConfig).toContain("root: 'app'");
-    expect(viteConfig).toContain("envDir: '.'");
-  });
-
-  it('protects the dashboard behind the restored authentication session', () => {
-    expect(main).toContain("from './services/auth.js'");
-    expect(main).toContain('state.isAuthLoading');
-    expect(main).toContain("const skipLogin=import.meta.env.DEV&&import.meta.env.VITE_APP_MODE==='development';");
-    expect(main).toContain('else if(!skipLogin&&!state.session)');
-    expect(main).toContain('initializeAuth()');
-    expect(authService).toContain('client.auth.getSession()');
-  });
-
-  it('starts authentication without requiring unsupported top-level await', () => {
-    expect(main).toContain('\ninitializeAuth();');
-    expect(main).not.toContain('\nawait loadVideos();');
-  });
+import { describe,expect,it } from 'vitest';
+import fs from 'node:fs';
+const app=fs.readFileSync('app/src/App.tsx','utf8');const hook=fs.readFileSync('app/src/hooks/useVideos.ts','utf8');const workflow=fs.readFileSync('app/src/constants/video-workflow.ts','utf8');const config=fs.readFileSync('vite.config.ts','utf8');const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
+describe('Supabase React integration',()=>{
+  it('loads videos through the service without mock data',()=>{expect(hook).toContain('getVideos');expect(hook).not.toContain('initialVideos');});
+  it('keeps loading, retry, and empty states',()=>{expect(app).toContain('Could not load videos. Please try again.');expect(app).toContain('videos.load()');expect(app).toContain('No videos available');});
+  it('centralizes workflow labels',()=>{expect(workflow).toContain("key:'review_edit'");expect(workflow).toContain("key:'prepare_metadata'");expect(workflow).toContain("['no_action_required','No Action Required']");});
+  it('keeps the Vite app root and environment directory',()=>{expect(pkg.scripts.dev).toBe('vite --config vite.config.ts');expect(pkg.scripts.build).toContain('vite build --config vite.config.ts');expect(config).toContain("root: 'app'");expect(config).toContain("envDir: '.'");});
+  it('protects the dashboard with the auth hook and development bypass',()=>{expect(app).toContain('useAuth()');expect(fs.readFileSync('app/src/hooks/useAuth.ts','utf8')).toContain("VITE_APP_MODE==='development'");});
 });

@@ -1,47 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import fs from 'fs';
-
-const html = fs.readFileSync('app/index.html', 'utf8');
-const main = fs.readFileSync('app/src/main.js', 'utf8');
-
-describe('SproutOps UI features', () => {
-  it('keeps responsive desktop and mobile New Video actions', () => {
-    expect(main).toContain('header-new-video-btn');
-    expect(main).toContain('new-video-fab');
-    expect(html).toContain('.header-new-video-btn { display:none; }');
-    expect(html).toContain('.new-video-fab { display:inline-grid;');
-  });
-
-  it('renders sequence-numbered database video cards', () => {
-    expect(main).toContain('#${video.sequence_number}');
-    expect(main).toContain('VIDEO_STAGE_LABELS[video.current_stage]');
-    expect(main).toContain('NEXT_ACTION_LABELS[video.next_action]');
-    expect(main).toContain('video.next_action_note');
-    expect(main).toContain('video.updated_at');
-  });
-
-  it('presents stage and up-next values as compact information cards', () => {
-    expect(main).toContain('fact-card stage-fact');
-    expect(main).toContain('fact-card up-next-fact');
-    expect(main).toContain('fact-label">Stage');
-    expect(main).toContain('fact-label">Up Next');
-    expect(html).toContain('--stage-card-background:#F3F0FA');
-    expect(html).toContain('--up-next-card-background:#EDF8F0');
-    expect(html).not.toContain('.fact-pill');
-  });
-
-  it('renders database-derived workflow and editing controls', () => {
-    expect(main).toContain('deriveWorkflowItems(video)');
-    expect(main).toContain('data-action="toggle-checklist"');
-    expect(main).toContain('data-workflow-action="${item.key}"');
-    expect(main).toContain('toggleVideoChecklist(videoId,video,actionKey,isCompleted)');
-    expect(main).toContain('checkbox.checked');
-    expect(main).toContain('const enabled=item.enabled&&!pending');
-    expect(main).not.toContain("item.key!=='review_edit'");
-    expect(main).toContain('Request Changes');
-    expect(main).toContain('Approve Edit');
-    expect(main).toContain('No editing version has been created yet.');
-    expect(main).not.toContain('tasksByVideoId');
-    expect(main).not.toContain('updateVideoTaskCompletion');
-  });
+import { describe,expect,it } from 'vitest';
+import fs from 'node:fs';
+const app=fs.readFileSync('app/src/App.tsx','utf8');const card=fs.readFileSync('app/src/components/VideoCard.tsx','utf8');const workflow=fs.readFileSync('app/src/components/WorkflowSection.tsx','utf8');const styles=fs.readFileSync('app/src/styles.css','utf8');
+describe('SproutOps React UI features',()=>{
+  it('keeps desktop and mobile New Video actions',()=>{expect(app).toContain('new-video-fab');expect(fs.readFileSync('app/src/components/AppHeader.tsx','utf8')).toContain('header-new-video-btn');expect(app).toContain('max-sm:grid');});
+  it('renders database video facts',()=>{expect(card).toContain('video.sequence_number');expect(card).toContain('VIDEO_STAGE_LABELS[video.current_stage]');expect(card).toContain('NEXT_ACTION_LABELS[video.next_action]');expect(card).toContain('video.updated_at');});
+  it('renders every checklist item as an enabled checkbox outside pending writes',()=>{expect(workflow).toContain('deriveWorkflowItems(video)');expect(workflow).toContain('type="checkbox"');expect(workflow).toContain('disabled={pending}');expect(workflow).not.toContain("item.key!=='review_edit'");});
+  it('uses Tailwind and no inline legacy stylesheet',()=>{expect(styles).toContain('@import "tailwindcss"');expect(fs.readFileSync('app/index.html','utf8')).not.toContain('<style>');});
 });

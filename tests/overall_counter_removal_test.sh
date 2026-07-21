@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-file="app/index.html"
+file="app/src/components/AppHeader.tsx"
 
 if grep -Fq 'class="header-progress"' "$file"; then
   echo "FAIL: header still renders the overall task counter"
@@ -18,7 +18,7 @@ if grep -Fq 'getOverallProgress' "$file"; then
   exit 1
 fi
 
-if ! grep -Fq '.header-new-video-btn { margin-left:auto; }' "$file"; then
+if ! grep -Fq 'ml-auto flex items-center' "$file"; then
   echo "FAIL: desktop New Video action should remain right-aligned"
   exit 1
 fi

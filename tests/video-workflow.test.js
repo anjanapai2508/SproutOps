@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { VIDEO_WORKFLOW, deriveWorkflowItems, getChecklistUpdate } from '../app/src/constants/video-workflow.js';
+import { VIDEO_WORKFLOW, deriveWorkflowItems, getChecklistUpdate } from '../app/src/constants/video-workflow.ts';
 
 describe('video workflow', () => {
   it('defines the workflow once in database enum order', () => {

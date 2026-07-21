@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
 
-rg -q 'class="brand-row"' app/src/main.js
-rg -q 'class="brand-logo" src="\$\{logoUrl\}" alt="Giggle Sprouts logo"' app/src/main.js
-rg -q 'class="app-title">SproutOps' app/src/main.js
+rg -q 'import logoUrl' app/src/components/AppHeader.tsx
+rg -Fq 'src={logoUrl} alt="Giggle Sprouts logo"' app/src/components/AppHeader.tsx
+rg -q '>SproutOps</div>' app/src/components/AppHeader.tsx

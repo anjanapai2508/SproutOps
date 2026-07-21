@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createAuthService } from '../app/src/services/auth.js';
+import { createAuthService } from '../app/src/services/auth.ts';
 
 describe('auth service', () => {
   it('returns the current authenticated session', async () => {
