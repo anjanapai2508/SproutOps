@@ -29,6 +29,36 @@ describe('video workflow', () => {
     });
   });
 
+  it('allows later items to be checked without skipping an earlier unchecked item', () => {
+    expect(getChecklistUpdate({completed_actions:[]},'publish_video',true)).toEqual({
+      completed_actions:['publish_video'],current_stage:'pre_production',next_action:'write_script',published_at:null
+    });
+  });
+
+  it('moves Up Next back to an unchecked item while preserving other checks', () => {
+    expect(getChecklistUpdate({completed_actions:['write_script','review_script','shoot_video']},'review_script',false)).toEqual({
+      completed_actions:['write_script','shoot_video'],current_stage:'pre_production',next_action:'review_script',published_at:null
+    });
+  });
+
+  it('reopens a completed video and clears its published timestamp', () => {
+    const all=VIDEO_WORKFLOW.map(({key})=>key);
+    expect(getChecklistUpdate({completed_actions:all,published_at:'2026-07-20T18:00:00.000Z'},'create_thumbnail',false)).toEqual({
+      completed_actions:all.filter((key)=>key!=='create_thumbnail'),current_stage:'publishing',next_action:'create_thumbnail',published_at:null
+    });
+  });
+
+  it('does not duplicate an already checked action', () => {
+    expect(getChecklistUpdate({completed_actions:['review_script']},'review_script',true).completed_actions).toEqual(['review_script']);
+  });
+
+  it('supports legacy rows until the migration backfill is visible', () => {
+    const items=deriveWorkflowItems({current_stage:'production',next_action:'shoot_video'});
+    expect(items.find(({key})=>key==='write_script').completed).toBe(true);
+    expect(items.find(({key})=>key==='review_script').completed).toBe(true);
+    expect(items.find(({key})=>key==='shoot_video').current).toBe(true);
+  });
+
   it('completes when every item is checked', () => {
     vi.useFakeTimers(); vi.setSystemTime(new Date('2026-07-20T18:00:00.000Z'));
     const allButPublish=VIDEO_WORKFLOW.slice(0,-1).map(({key})=>key);

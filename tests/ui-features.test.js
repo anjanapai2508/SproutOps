@@ -36,6 +36,8 @@ describe('SproutOps UI features', () => {
     expect(main).toContain('data-workflow-action="${item.key}"');
     expect(main).toContain('toggleVideoChecklist(videoId,video,actionKey,isCompleted)');
     expect(main).toContain('checkbox.checked');
+    expect(main).toContain('const enabled=item.enabled&&!pending');
+    expect(main).not.toContain("item.key!=='review_edit'");
     expect(main).toContain('Request Changes');
     expect(main).toContain('Approve Edit');
     expect(main).toContain('No editing version has been created yet.');

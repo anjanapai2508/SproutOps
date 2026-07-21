@@ -84,6 +84,13 @@ describe('videos service', () => {
     await expect(createVideosService(client).toggleVideoChecklist('video-1',row,'write_script',true)).rejects.toThrow('changed');
   });
 
+  it('propagates checklist update errors', async () => {
+    const error=new Error('RLS denied');
+    const query=queryResult({data:null,error});
+    const client={from:vi.fn(()=>query)};
+    await expect(createVideosService(client).toggleVideoChecklist('video-1',row,'write_script',true)).rejects.toBe(error);
+  });
+
   it('throws Supabase errors', async () => {
     const error = new Error('RLS denied');
     const query = queryResult({ data: null, error });
