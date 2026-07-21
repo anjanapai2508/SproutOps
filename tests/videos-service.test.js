@@ -19,7 +19,8 @@ function queryResult(result) {
     insert: vi.fn(() => query),
     update: vi.fn(() => query),
     eq: vi.fn(() => query),
-    single: vi.fn(() => Promise.resolve(result))
+    single: vi.fn(() => Promise.resolve(result)),
+    maybeSingle: vi.fn(() => Promise.resolve(result))
   };
   return query;
 }
@@ -65,6 +66,24 @@ describe('videos service', () => {
     expect(query.update).toHaveBeenCalledWith({ archived_at: expect.any(String) });
     expect(query.eq).toHaveBeenCalledWith('id', 'video-1');
     expect(query.delete).toBeUndefined();
+  });
+
+  it('advances workflow with stale-write protection', async () => {
+    const saved={...row,current_stage:'production',next_action:'record_voice'};
+    const query=queryResult({data:saved,error:null});
+    const client={from:vi.fn(()=>query)};
+    await expect(createVideosService(client).advanceVideoWorkflow('video-1',{
+      ...row,current_stage:'production',next_action:'shoot_video'
+    })).resolves.toEqual(saved);
+    expect(query.update).toHaveBeenCalledWith({current_stage:'production',next_action:'record_voice'});
+    expect(query.eq).toHaveBeenCalledWith('id','video-1');
+    expect(query.eq).toHaveBeenCalledWith('next_action','shoot_video');
+  });
+
+  it('rejects a stale workflow update', async () => {
+    const query=queryResult({data:null,error:null});
+    const client={from:vi.fn(()=>query)};
+    await expect(createVideosService(client).advanceVideoWorkflow('video-1',row)).rejects.toThrow('changed');
   });
 
   it('throws Supabase errors', async () => {
