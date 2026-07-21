@@ -16,7 +16,7 @@ describe('SproutOps UI features', () => {
     expect(main).toContain('#${video.sequence_number}');
     expect(main).toContain('VIDEO_STAGE_LABELS[video.current_stage]');
     expect(main).toContain('NEXT_ACTION_LABELS[video.next_action]');
-    expect(main).not.toContain('video.next_action_note');
+    expect(main).toContain('video.next_action_note');
     expect(main).toContain('video.updated_at');
   });
 
@@ -30,11 +30,14 @@ describe('SproutOps UI features', () => {
     expect(html).not.toContain('.fact-pill');
   });
 
-  it('renders connected workflow task and editing data', () => {
-    expect(main).toContain('state.tasksByVideoId[video.id]');
-    expect(main).toContain('data-action="toggle-task"');
-    expect(main).toContain('await updateVideoTaskCompletion(taskId,completed)');
-    expect(main).toContain('video.edit_versions');
-    expect(main).toContain('version.edit_comments');
+  it('renders database-derived workflow and editing controls', () => {
+    expect(main).toContain('deriveWorkflowItems(video)');
+    expect(main).toContain('data-action="advance-workflow"');
+    expect(main).toContain('data-workflow-action="${item.key}"');
+    expect(main).toContain('Request Changes');
+    expect(main).toContain('Approve Edit');
+    expect(main).toContain('No editing version has been created yet.');
+    expect(main).not.toContain('tasksByVideoId');
+    expect(main).not.toContain('updateVideoTaskCompletion');
   });
 });

@@ -6,6 +6,7 @@ const main = fs.existsSync('app/src/main.js') ? fs.readFileSync('app/src/main.js
 const labels = fs.existsSync('app/src/constants/video-labels.js')
   ? fs.readFileSync('app/src/constants/video-labels.js', 'utf8')
   : '';
+const workflow = fs.readFileSync('app/src/constants/video-workflow.js', 'utf8');
 const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 const viteConfig = fs.existsSync('vite.config.js') ? fs.readFileSync('vite.config.js', 'utf8') : '';
 const authService = fs.existsSync('app/src/services/auth.js')
@@ -45,9 +46,10 @@ describe('Supabase videos-only integration', () => {
   });
 
   it('centralizes readable next-action labels', () => {
-    expect(labels).toContain("review_edit: 'Review the latest edit'");
-    expect(labels).toContain("prepare_metadata: 'Prepare description and tags'");
-    expect(labels).toContain("no_action_required: 'No action required'");
+    expect(labels).toContain("from './video-workflow.js'");
+    expect(workflow).toContain("{ key:'review_edit', label:'Review Edit'");
+    expect(workflow).toContain("{ key:'prepare_metadata', label:'Prepare Metadata'");
+    expect(workflow).toContain("['no_action_required','No Action Required']");
   });
 
   it('uses the app root and loads its environment file for Vite builds', () => {
@@ -61,7 +63,7 @@ describe('Supabase videos-only integration', () => {
   it('protects the dashboard behind the restored authentication session', () => {
     expect(main).toContain("from './services/auth.js'");
     expect(main).toContain('state.isAuthLoading');
-    expect(main).toContain("const skipLogin = import.meta.env.DEV && import.meta.env.VITE_APP_MODE === 'development';");
+    expect(main).toContain("const skipLogin=import.meta.env.DEV&&import.meta.env.VITE_APP_MODE==='development';");
     expect(main).toContain('else if(!skipLogin&&!state.session)');
     expect(main).toContain('initializeAuth()');
     expect(authService).toContain('client.auth.getSession()');
