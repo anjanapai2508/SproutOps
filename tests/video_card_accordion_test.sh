@@ -5,5 +5,5 @@ rg -q 'setExpanded' app/src/components/VideoCard.tsx
 rg -Fq 'aria-expanded={expanded}' app/src/components/VideoCard.tsx
 rg -q 'WorkflowSection' app/src/components/VideoCard.tsx
 rg -q 'setExpanded' app/src/components/WorkflowSection.tsx
-rg -q 'EditingDetails' app/src/components/VideoCard.tsx
+rg -q 'EditingSection' app/src/components/VideoCard.tsx
 rg -Fq 'aria-expanded={expanded}' app/src/components/WorkflowSection.tsx

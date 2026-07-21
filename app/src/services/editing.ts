@@ -13,6 +13,13 @@ export function createEditingService(client:Client) {
     return unwrap(await client.from('edit_versions').update(payload).eq('id',id).select('*').single() as unknown as Result<EditVersion>)!;
   }
   return {
+    async startEditing(video:Video,userId:string) {
+      const latest=unwrap(await client.from('edit_versions').select('version_number').eq('video_id',video.id).order('version_number',{ascending:false}).limit(1).maybeSingle() as unknown as Result<{version_number:number}>)||null;
+      const payload={video_id:video.id,version_number:(latest?.version_number||0)+1,status:'Editing' as const,created_by:userId,assigned_editor:userId};
+      const activeVersion=unwrap(await client.from('edit_versions').insert(payload).select('*').single() as unknown as Result<EditVersion>)!;
+      const savedVideo=unwrap(await client.from('videos').update({next_action_version_id:activeVersion.id}).eq('id',video.id).select('*').single() as unknown as Result<Video>)!;
+      return {video:savedVideo,activeVersion};
+    },
     async getEditingDetails(video:Video):Promise<EditingDetails> {
       const versions=unwrap(await client.from('edit_versions').select('*').eq('video_id',video.id).order('version_number',{ascending:false}) as unknown as Result<EditVersion[]>)||[];
       const activeVersion=versions.find(({id})=>id===video.next_action_version_id)||null;
@@ -40,6 +47,7 @@ export function createEditingService(client:Client) {
 
 const service=()=>createEditingService(getSupabase());
 export const getEditingDetails=(video:Video)=>service().getEditingDetails(video);
+export const startEditing=(video:Video,userId:string)=>service().startEditing(video,userId);
 export const requestChanges=(video:Video)=>service().requestChanges(video);
 export const approveEdit=(video:Video,userId:string)=>service().approveEdit(video,userId);
 export const updateEditingStatus=(video:Video,version:EditVersion,status:EditVersionStatus,userId:string)=>service().updateEditingStatus(video,version,status,userId);

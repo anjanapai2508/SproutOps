@@ -22,7 +22,7 @@ export function useVideos(enabled:boolean) {
     finally{setPending((value)=>({...value,[video.id]:false}));}
   };
   return {
-    videos,loading,error,pending,mutationErrors,load,toggle,
+    videos,loading,error,pending,mutationErrors,load,toggle,sync:replace,
     create:async(input:{title:string;description:string})=>{const saved=await createVideo(input);setVideos((items)=>sort([...items,saved]));},
     update:async(video:Video,title:string)=>replace(await updateVideo(video.id,{title})),
     archive:async(video:Video)=>{await archiveVideo(video.id);setVideos((items)=>items.filter(({id})=>id!==video.id));}
