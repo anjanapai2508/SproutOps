@@ -3,7 +3,7 @@ import { archiveVideo, createVideo, getVideos, toggleVideoChecklist, updateVideo
 import { getChecklistUpdate } from '../constants/video-workflow';
 import type { Video, WorkflowAction } from '../types/domain';
 
-const sort=(items:Video[])=>[...items].sort((a,b)=>a.sequence_number-b.sequence_number);
+const sort=(items:Video[])=>[...items].sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime());
 
 export function useVideos(enabled:boolean) {
   const [videos,setVideos]=useState<Video[]>([]);

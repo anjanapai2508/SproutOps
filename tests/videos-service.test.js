@@ -26,7 +26,7 @@ function queryResult(result) {
 }
 
 describe('videos service', () => {
-  it('fetches only active videos ordered by sequence number', async () => {
+  it('fetches only active videos ordered by creation date', async () => {
     const query = queryResult({ data: [row], error: null });
     const client = { from: vi.fn(() => query) };
 
@@ -34,7 +34,7 @@ describe('videos service', () => {
     expect(client.from).toHaveBeenCalledWith('videos');
     expect(query.select).toHaveBeenCalledWith('*, edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))');
     expect(query.is).toHaveBeenCalledWith('archived_at', null);
-    expect(query.order).toHaveBeenCalledWith('sequence_number', { ascending: true });
+    expect(query.order).toHaveBeenCalledWith('created_at', { ascending: true });
   });
 
   it('creates a video with only supported initial fields', async () => {

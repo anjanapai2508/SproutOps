@@ -11,7 +11,7 @@ function unwrap<T>({data,error}:Result<T>):T|null { if(error)throw error; return
 export function createVideosService(client:Client) {
   return {
     async getVideos():Promise<Video[]> {
-      const result=await client.from('videos').select('*, edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))').is('archived_at',null).order('sequence_number',{ascending:true});
+      const result=await client.from('videos').select('*, edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))').is('archived_at',null).order('created_at',{ascending:true});
       return (unwrap(result as unknown as Result<Video[]>)||[]);
     },
     async createVideo(input:{title:string;description?:string}):Promise<Video> {
