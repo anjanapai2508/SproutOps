@@ -46,4 +46,15 @@ describe('editing service',()=>{
     expect(commentsQuery.order).toHaveBeenCalledWith('created_at',{ascending:true});
     expect(details.profilesById.u1.display_name).toBe('Roshan');
   });
+
+  it('changes edit status without overriding checklist-derived video fields',async()=>{
+    const version={id:'e1',status:'In-Review'};
+    const query=queryResult({data:version,error:null});
+    const client={from:vi.fn(()=>query)};
+    const video={id:'v1',current_stage:'pre_production',next_action:'write_script'};
+    await expect(createEditingService(client).updateEditingStatus(video,{id:'e1'},'In-Review','u1'))
+      .resolves.toEqual({video,activeVersion:version});
+    expect(client.from).toHaveBeenCalledTimes(1);
+    expect(client.from).toHaveBeenCalledWith('edit_versions');
+  });
 });

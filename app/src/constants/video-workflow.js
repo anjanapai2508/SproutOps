@@ -30,28 +30,33 @@ export const EDIT_STATUS_LABELS = {
   approved:'Approved', superseded:'Superseded'
 };
 
-export function deriveWorkflowItems(video) {
-  if(video.current_stage==='completed'&&video.next_action==='no_action_required') {
-    return VIDEO_WORKFLOW.map((step)=>({...step,completed:true,current:false,enabled:false}));
-  }
+function completedKeys(video) {
+  if(Array.isArray(video.completed_actions))return new Set(video.completed_actions);
+  if(video.current_stage==='completed'&&video.next_action==='no_action_required')return new Set(VIDEO_WORKFLOW.map(({key})=>key));
   const index=VIDEO_WORKFLOW.findIndex(({key})=>key===video.next_action);
-  if(index<0)throw new Error(`Unknown workflow action: ${video.next_action || 'missing'}`);
+  return new Set(index<0?[]:VIDEO_WORKFLOW.slice(0,index).map(({key})=>key));
+}
+
+export function deriveWorkflowItems(video) {
+  const completed=completedKeys(video);
+  const current=VIDEO_WORKFLOW.find(({key})=>!completed.has(key))?.key||null;
   return VIDEO_WORKFLOW.map((step,itemIndex)=>({
     ...step,
-    completed:itemIndex<index,
-    current:itemIndex===index,
-    enabled:itemIndex===index&&video.current_stage!=='on_hold'
+    completed:completed.has(step.key),
+    current:step.key===current,
+    enabled:true
   }));
 }
 
-export function getNextWorkflowUpdate(video) {
-  if(video.current_stage==='on_hold')throw new Error('Video is on hold and cannot advance');
-  const index=VIDEO_WORKFLOW.findIndex(({key})=>key===video.next_action);
-  if(index<0)throw new Error(`Unknown workflow action: ${video.next_action || 'missing'}`);
-  const next=VIDEO_WORKFLOW[index+1];
-  if(next)return {current_stage:next.stage,next_action:next.key};
+export function getChecklistUpdate(video,actionKey,isCompleted) {
+  if(!VIDEO_WORKFLOW.some(({key})=>key===actionKey))throw new Error(`Unknown checklist action: ${actionKey}`);
+  const completed=completedKeys(video);
+  if(isCompleted)completed.add(actionKey);else completed.delete(actionKey);
+  const completed_actions=VIDEO_WORKFLOW.filter(({key})=>completed.has(key)).map(({key})=>key);
+  const next=VIDEO_WORKFLOW.find(({key})=>!completed.has(key));
+  if(next)return {completed_actions,current_stage:next.stage,next_action:next.key,published_at:null};
   return {
-    current_stage:'completed',next_action:'no_action_required',
+    completed_actions,current_stage:'completed',next_action:'no_action_required',
     ...(video.published_at?{}:{published_at:new Date().toISOString()})
   };
 }

@@ -32,8 +32,10 @@ describe('SproutOps UI features', () => {
 
   it('renders database-derived workflow and editing controls', () => {
     expect(main).toContain('deriveWorkflowItems(video)');
-    expect(main).toContain('data-action="advance-workflow"');
+    expect(main).toContain('data-action="toggle-checklist"');
     expect(main).toContain('data-workflow-action="${item.key}"');
+    expect(main).toContain('toggleVideoChecklist(videoId,video,actionKey,isCompleted)');
+    expect(main).toContain('checkbox.checked');
     expect(main).toContain('Request Changes');
     expect(main).toContain('Approve Edit');
     expect(main).toContain('No editing version has been created yet.');

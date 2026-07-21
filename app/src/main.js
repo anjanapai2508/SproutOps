@@ -1,7 +1,7 @@
-import { archiveVideo, advanceVideoWorkflow, createVideo, getVideos, updateVideo } from './services/videos.js';
-import { addEditComment, approveEdit, createRevision, getEditingDetails, requestChanges, startEditing, submitForReview, updateEditingStatus } from './services/editing.js';
+import { archiveVideo, createVideo, getVideos, toggleVideoChecklist, updateVideo } from './services/videos.js';
+import { addEditComment, approveEdit, getEditingDetails, requestChanges, updateEditingStatus } from './services/editing.js';
 import { getSession, onAuthStateChange, sendLoginLink, signOut } from './services/auth.js';
-import { EDIT_STATUS_LABELS, NEXT_ACTION_LABELS, VIDEO_STAGE_LABELS, deriveWorkflowItems, getNextWorkflowUpdate } from './constants/video-workflow.js';
+import { EDIT_STATUS_LABELS, NEXT_ACTION_LABELS, VIDEO_STAGE_LABELS, deriveWorkflowItems, getChecklistUpdate } from './constants/video-workflow.js';
 import logoUrl from '../assets/logo_new.png';
 
 const state={session:null,isAuthLoading:true,authStep:'email',authEmail:'',authBusy:false,authError:null,authStatus:null,resendSeconds:0,videos:[],isLoading:false,loadError:null,modalOpen:false,isSaving:false,createError:null,createDraft:{title:'',description:''},expandedVideoId:null,expandedSections:{},mutationErrors:{},workflowPending:{},workflowErrors:{},editingByVideoId:{},editingLoading:{},editingErrors:{},editingPending:{},commentDrafts:{}};
@@ -30,8 +30,8 @@ function renderWorkflowContent(video,stage){
   if(result.error)return `<div class="task-load-error" role="alert">${escapeHtml(result.error)}</div>`;
   const pending=Boolean(state.workflowPending[video.id]);
   return result.map((item)=>{
-    const enabled=item.enabled&&!pending&&item.key!=='review_edit';
-    return `<label class="task-row ${item.completed?'completed':''} ${item.current?'current-workflow-item':''}" title="${escapeHtml(item.label)}"><input class="task-check" type="checkbox" data-action="advance-workflow" data-workflow-action="${item.key}" data-video-id="${video.id}" ${item.completed?'checked':''} ${enabled?'':'disabled'}><span class="task-label">${escapeHtml(item.label)}</span>${item.current?'<span class="workflow-current-label">Up next</span>':''}</label>`;
+    const enabled=item.enabled&&!pending;
+    return `<label class="task-row ${item.completed?'completed':''} ${item.current?'current-workflow-item':''}" title="${escapeHtml(item.label)}"><input class="task-check" type="checkbox" data-action="toggle-checklist" data-workflow-action="${item.key}" data-video-id="${video.id}" ${item.completed?'checked':''} ${enabled?'':'disabled'}><span class="task-label">${escapeHtml(item.label)}</span>${item.current?'<span class="workflow-current-label">Up next</span>':''}</label>`;
   }).join('')+(state.workflowErrors[video.id]?`<div class="task-update-error" role="status">${escapeHtml(state.workflowErrors[video.id])}</div>`:'');
 }
 
@@ -53,7 +53,7 @@ function renderEditingDetails(video){
   if(state.editingLoading[video.id])return '<div class="task-loading" role="status">Loading editing details…</div>';
   if(state.editingErrors[video.id])return `<div class="task-load-error" role="alert">Could not load editing details. <button class="text-btn" type="button" data-action="retry-editing" data-video-id="${video.id}">Retry</button></div>`;
   const details=state.editingByVideoId[video.id];
-  if(!details?.activeVersion)return '<div class="section-empty">No editing version has been created yet.<br>Start Editing will create Version 1.</div>';
+  if(!details?.activeVersion)return '<div class="section-empty">No editing version has been created yet.</div>';
   const version=details.activeVersion;
   const busy=Boolean(state.editingPending[video.id]);
   const statusOptions=Object.entries(EDIT_STATUS_LABELS).map(([value,label])=>`<option value="${value}" ${version.status===value?'selected':''}>${label}</option>`).join('');
@@ -80,7 +80,7 @@ function render(){if(!skipLogin&&state.isAuthLoading)document.getElementById('ap
 async function loadVideos(){if(!skipLogin&&!state.session)return;state.isLoading=true;state.loadError=null;render();try{state.videos=sortVideos(await getVideos());}catch(error){console.error('Could not load videos:',error);state.loadError=error;}finally{state.isLoading=false;render();}}
 async function loadEditing(videoId){const video=state.videos.find(({id})=>id===videoId);if(!video)return;state.editingLoading[videoId]=true;delete state.editingErrors[videoId];render();try{state.editingByVideoId[videoId]=await getEditingDetails(video);}catch(error){console.error('Could not load editing details:',error);state.editingErrors[videoId]=error.message||'Could not load editing details.';}finally{delete state.editingLoading[videoId];render();}}
 
-async function advanceWorkflow(videoId){if(state.workflowPending[videoId])return;const video=state.videos.find(({id})=>id===videoId);if(!video)return;const previous={...video};state.workflowPending[videoId]=true;delete state.workflowErrors[videoId];try{replaceVideo({...video,...getNextWorkflowUpdate(video)});render();let result;if(video.next_action==='start_editing')result=await startEditing(video,currentUserId());else if(video.next_action==='submit_for_review')result=await submitForReview(video);else if(video.next_action==='make_edit_changes')result=await createRevision(video,currentUserId());else result={video:await advanceVideoWorkflow(videoId,video)};replaceVideo(result.video);if(result.activeVersion||video.next_action==='start_editing')await loadEditing(videoId);}catch(error){replaceVideo(previous);state.workflowErrors[videoId]=error.message||'Could not advance workflow.';}finally{delete state.workflowPending[videoId];render();}}
+async function toggleChecklist(videoId,actionKey,isCompleted){if(state.workflowPending[videoId])return;const video=state.videos.find(({id})=>id===videoId);if(!video)return;const previous={...video};state.workflowPending[videoId]=true;delete state.workflowErrors[videoId];try{replaceVideo({...video,...getChecklistUpdate(video,actionKey,isCompleted)});render();const saved=await toggleVideoChecklist(videoId,video,actionKey,isCompleted);replaceVideo(saved);}catch(error){replaceVideo(previous);state.workflowErrors[videoId]=error.message||'Could not save checklist.';}finally{delete state.workflowPending[videoId];render();}}
 async function editingMutation(videoId,operation){if(state.editingPending[videoId])return;const video=state.videos.find(({id})=>id===videoId);if(!video)return;state.editingPending[videoId]=true;delete state.editingErrors[`${videoId}:mutation`];render();try{const result=await operation(video);if(result?.video)replaceVideo(result.video);await loadEditing(videoId);}catch(error){state.editingErrors[`${videoId}:mutation`]=error.message||'Could not save editing changes.';await loadEditing(videoId);}finally{delete state.editingPending[videoId];render();}}
 
 async function requireAuthenticated(){return skipLogin||Boolean(state.session);}
@@ -101,7 +101,7 @@ function bindEvents(){
   document.querySelectorAll('[data-action="close-modal"]').forEach((element)=>element.addEventListener('click',(event)=>{if(event.target===event.currentTarget||event.target.closest('button'))closeModal();}));
   document.querySelectorAll('[data-action="retry-videos"]').forEach((button)=>button.addEventListener('click',loadVideos));
   document.querySelectorAll('[data-action="retry-editing"]').forEach((button)=>button.addEventListener('click',()=>loadEditing(button.dataset.videoId)));
-  document.querySelectorAll('[data-action="advance-workflow"]').forEach((checkbox)=>checkbox.addEventListener('change',()=>advanceWorkflow(checkbox.dataset.videoId)));
+  document.querySelectorAll('[data-action="toggle-checklist"]').forEach((checkbox)=>checkbox.addEventListener('change',()=>toggleChecklist(checkbox.dataset.videoId,checkbox.dataset.workflowAction,checkbox.checked)));
   document.querySelectorAll('[data-action="toggle-video"]').forEach((button)=>button.addEventListener('click',()=>{state.expandedVideoId=state.expandedVideoId===button.dataset.videoId?null:button.dataset.videoId;render();}));
   document.querySelectorAll('[data-action="toggle-section"]').forEach((button)=>button.addEventListener('click',()=>{const key=sectionKey(button.dataset.videoId,button.dataset.sectionId);state.expandedSections[key]=!state.expandedSections[key];render();if(button.dataset.sectionId==='editing'&&state.expandedSections[key]&&!state.editingByVideoId[button.dataset.videoId])loadEditing(button.dataset.videoId);}));
   document.querySelectorAll('[data-action="edit-status"]').forEach((select)=>select.addEventListener('change',()=>{const videoId=select.dataset.videoId;const details=state.editingByVideoId[videoId];editingMutation(videoId,(video)=>updateEditingStatus(video,details.activeVersion,select.value,currentUserId()));}));

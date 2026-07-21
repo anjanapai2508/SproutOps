@@ -68,22 +68,20 @@ describe('videos service', () => {
     expect(query.delete).toBeUndefined();
   });
 
-  it('advances workflow with stale-write protection', async () => {
-    const saved={...row,current_stage:'production',next_action:'record_voice'};
+  it('toggles checklist state with stale-write protection', async () => {
+    const saved={...row,completed_actions:['review_script'],current_stage:'pre_production',next_action:'write_script'};
     const query=queryResult({data:saved,error:null});
     const client={from:vi.fn(()=>query)};
-    await expect(createVideosService(client).advanceVideoWorkflow('video-1',{
-      ...row,current_stage:'production',next_action:'shoot_video'
-    })).resolves.toEqual(saved);
-    expect(query.update).toHaveBeenCalledWith({current_stage:'production',next_action:'record_voice'});
+    await expect(createVideosService(client).toggleVideoChecklist('video-1',{...row,completed_actions:['write_script','review_script']},'write_script',false)).resolves.toEqual(saved);
+    expect(query.update).toHaveBeenCalledWith({completed_actions:['review_script'],current_stage:'pre_production',next_action:'write_script',published_at:null});
     expect(query.eq).toHaveBeenCalledWith('id','video-1');
-    expect(query.eq).toHaveBeenCalledWith('next_action','shoot_video');
+    expect(query.eq).toHaveBeenCalledWith('updated_at',row.updated_at);
   });
 
   it('rejects a stale workflow update', async () => {
     const query=queryResult({data:null,error:null});
     const client={from:vi.fn(()=>query)};
-    await expect(createVideosService(client).advanceVideoWorkflow('video-1',row)).rejects.toThrow('changed');
+    await expect(createVideosService(client).toggleVideoChecklist('video-1',row,'write_script',true)).rejects.toThrow('changed');
   });
 
   it('throws Supabase errors', async () => {

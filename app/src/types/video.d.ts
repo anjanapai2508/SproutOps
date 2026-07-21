@@ -30,6 +30,7 @@ export interface Video {
   description: string | null;
   current_stage: VideoStage;
   next_action: VideoNextAction;
+  completed_actions: VideoNextAction[];
   next_action_assignee_id: string | null;
   next_action_version_id: string | null;
   next_action_note: string | null;

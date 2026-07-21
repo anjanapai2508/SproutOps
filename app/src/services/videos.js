@@ -1,9 +1,9 @@
 import { getSupabase } from '../lib/supabase.js';
-import { getNextWorkflowUpdate } from '../constants/video-workflow.js';
+import { getChecklistUpdate } from '../constants/video-workflow.js';
 
 const UPDATE_FIELDS = [
   'title', 'description', 'current_stage', 'next_action', 'next_action_note',
-  'next_action_assignee_id', 'next_action_version_id', 'published_at'
+  'next_action_assignee_id', 'next_action_version_id', 'published_at', 'completed_actions'
 ];
 
 function unwrap({ data, error }) {
@@ -43,12 +43,12 @@ export function createVideosService(client) {
       return unwrap(result);
     },
 
-    async advanceVideoWorkflow(id, video) {
-      const payload=getNextWorkflowUpdate(video);
+    async toggleVideoChecklist(id, video, actionKey, isCompleted) {
+      const payload=getChecklistUpdate(video,actionKey,isCompleted);
       const result=await client.from('videos')
         .update(payload)
         .eq('id',id)
-        .eq('next_action',video.next_action)
+        .eq('updated_at',video.updated_at)
         .select('*')
         .maybeSingle();
       if(result.error)throw result.error;
@@ -75,5 +75,5 @@ function service() {
 export const getVideos = () => service().getVideos();
 export const createVideo = (input) => service().createVideo(input);
 export const updateVideo = (id, changes) => service().updateVideo(id, changes);
-export const advanceVideoWorkflow = (id, video) => service().advanceVideoWorkflow(id, video);
+export const toggleVideoChecklist = (id, video, actionKey, isCompleted) => service().toggleVideoChecklist(id,video,actionKey,isCompleted);
 export const archiveVideo = (id) => service().archiveVideo(id);

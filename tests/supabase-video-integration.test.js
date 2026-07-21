@@ -37,6 +37,8 @@ describe('Supabase videos-only integration', () => {
     expect(main).toContain('EDITING');
     expect(main).toContain('PUBLISHING');
     expect(main).not.toContain('progress.percentage');
+    expect(main).not.toContain('advanceVideoWorkflow');
+    expect(main).not.toContain('getNextWorkflowUpdate');
   });
 
   it('restores the original light-blue New Video treatment', () => {
