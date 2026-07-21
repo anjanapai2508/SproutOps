@@ -1,24 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --color-sprout: #239cc3;
 }
 
-:root { color-scheme: light; font-family: var(--font-sans); background: #fafaf8; color: #1f2937; }
+:root { color-scheme: light; background: #fafaf8; color: #1f2937; }
 * { box-sizing: border-box; }
-body { min-height: 100vh; margin: 0; background: #fafaf8; }
+html, body, #app { font-family: var(--font-sans); }
+body { min-height: 100vh; margin: 0; background: #fafaf8; font-weight: 400; }
 button, input, textarea, select { font: inherit; }
 :where(button,input,textarea,select):focus-visible { outline: 3px solid rgb(35 156 195 / .2); outline-offset: 2px; }
 
 @layer components {
-  .btn-primary { @apply min-h-10 cursor-pointer rounded-xl border-0 bg-cyan-600 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-cyan-700 disabled:cursor-wait disabled:opacity-60; }
-  .btn-secondary { @apply min-h-10 cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50; }
-  .btn-soft { @apply min-h-10 cursor-pointer rounded-xl border-0 bg-sky-100 px-4 py-2 font-semibold text-sky-800 transition hover:bg-sky-200; }
-  .btn-danger { @apply min-h-10 cursor-pointer rounded-xl border border-red-700 bg-white px-4 py-2 font-semibold text-red-700 hover:bg-red-50; }
-  .btn-text { @apply cursor-pointer border-0 bg-transparent px-2 py-2 font-semibold text-sky-700 hover:text-sky-900; }
-  .input { @apply min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 transition focus:border-cyan-600 focus:outline-none focus:ring-4 focus:ring-cyan-600/10; }
-  .eyebrow { @apply text-[10px] font-bold uppercase tracking-[.12em] text-slate-400; }
+  .btn-primary { @apply min-h-10 cursor-pointer rounded-xl border-0 bg-cyan-600 px-4 py-2 font-medium text-white shadow-sm transition hover:bg-cyan-700 disabled:cursor-wait disabled:opacity-60; }
+  .btn-secondary { @apply min-h-10 cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-2 font-medium text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-soft { @apply min-h-10 cursor-pointer rounded-xl border-0 bg-sky-100 px-4 py-2 font-medium text-sky-800 transition hover:bg-sky-200; }
+  .btn-danger { @apply min-h-10 cursor-pointer rounded-xl border border-red-700 bg-white px-4 py-2 font-medium text-red-700 hover:bg-red-50; }
+  .btn-text { @apply cursor-pointer border-0 bg-transparent px-2 py-2 font-medium text-sky-700 hover:text-sky-900; }
+  .input { @apply min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-medium text-slate-900 transition focus:border-cyan-600 focus:outline-none focus:ring-4 focus:ring-cyan-600/10; }
+  .eyebrow { @apply text-[10px] font-medium uppercase tracking-[.12em] text-slate-400; }
   .state-card { @apply rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500; }
   .state-card h2 { @apply mb-2 text-xl font-bold text-slate-900; }
 }
