@@ -6,6 +6,7 @@ const client=fs.readFileSync('app/src/lib/supabase.ts','utf8');
 describe('passwordless authentication UI',()=>{
   it('keeps browser session persistence and callback detection',()=>{expect(client).toContain('persistSession:true');expect(client).toContain('autoRefreshToken:true');expect(client).toContain('detectSessionInUrl:true');});
   it('renders email login and confirmation',()=>{expect(login).toContain('type="email"');expect(login).toContain('autoComplete="email"');expect(login).toContain('Send login link');expect(login).toContain('continue in this window');expect(login).toContain('role="alert"');});
+  it('offers same-window Google sign-in before email fallback',()=>{expect(login).toContain('Continue with Google');expect(login).toContain('or continue with email');expect(login).toContain('signInWithGoogle(window.location.origin)');expect(login).not.toContain('window.open');});
   it('normalizes email and enforces resend cooldown',()=>{expect(login).toContain('trim().toLowerCase()');expect(login).toContain('setSeconds(60)');expect(login).toContain('Resend link in');});
   it('shows the account and sign-out action',()=>{expect(header).toContain('session?.user.email');expect(header).toContain('Sign out');expect(header).toContain('onSignOut');});
 });

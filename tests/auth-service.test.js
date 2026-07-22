@@ -41,6 +41,25 @@ describe('auth service', () => {
     });
   });
 
+  it('starts Google OAuth in the current application origin', async () => {
+    const signInWithOAuth = vi.fn().mockResolvedValue({ error: null });
+    const client = { auth: { signInWithOAuth } };
+
+    await createAuthService(client).signInWithGoogle('https://sproutops.example.com');
+
+    expect(signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: 'https://sproutops.example.com' }
+    });
+  });
+
+  it('propagates Google OAuth startup errors', async () => {
+    const error = new Error('Provider unavailable');
+    const client = { auth: { signInWithOAuth: vi.fn().mockResolvedValue({ error }) } };
+
+    await expect(createAuthService(client).signInWithGoogle('http://localhost:4175')).rejects.toBe(error);
+  });
+
   it('signs out and exposes an unsubscribable auth listener', async () => {
     const unsubscribe = vi.fn();
     const signOut = vi.fn().mockResolvedValue({ error: null });
