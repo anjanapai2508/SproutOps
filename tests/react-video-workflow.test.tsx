@@ -19,6 +19,19 @@ describe('React video workflow',()=>{
     expect(screen.getByText('Updated Jul 21, 2026')).not.toBeNull();
   });
 
+  it('shows progress only while an incomplete card is collapsed',async()=>{
+    render(<VideoCard video={{...video,completed_actions:['write_script','review_script']}} onToggleChecklist={vi.fn()} onUpdate={vi.fn()} onArchive={vi.fn()} userId="u1" />);
+    expect(screen.getByRole('progressbar',{name:'2 of 14 tasks complete'})).not.toBeNull();
+    await userEvent.click(screen.getByRole('button',{name:/test video/i}));
+    expect(screen.queryByRole('progressbar')).toBeNull();
+  });
+
+  it('does not show progress when every task is complete',()=>{
+    const completed_actions=['write_script','review_script','shoot_video','record_voice','start_editing','continue_editing','submit_for_review','review_edit','make_edit_changes','approve_edit','create_thumbnail','prepare_metadata','review_publishing_details','publish_video'] as Video['completed_actions'];
+    render(<VideoCard video={{...video,current_stage:'completed',next_action:'no_action_required',completed_actions}} onToggleChecklist={vi.fn()} onUpdate={vi.fn()} onArchive={vi.fn()} userId="u1" />);
+    expect(screen.queryByRole('progressbar')).toBeNull();
+  });
+
   it('shows the production pipeline only while the card is expanded',async()=>{
     render(<VideoCard video={video} onToggleChecklist={vi.fn()} onUpdate={vi.fn()} onArchive={vi.fn()} userId="u1" />);
     expect(screen.queryByLabelText('Production pipeline')).toBeNull();
