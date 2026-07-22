@@ -16,6 +16,9 @@ jobs:
 
       # Step 2: Launches the Nginx container directly from the runner workspace
       - name: Deploy with Docker Compose
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
           docker compose up -d --build --remove-orphans
 
@@ -23,4 +26,3 @@ jobs:
       - name: Purge Old Images
         run: |
           docker image prune -f
-

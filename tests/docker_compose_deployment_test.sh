@@ -14,3 +14,5 @@ rg -Fq 'Content-Security-Policy' nginx.conf
 rg -Fq '.env' .gitignore
 rg -Fq '.env' .dockerignore
 ! git ls-files --error-unmatch .env >/dev/null 2>&1
+rg -Fq 'VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}' .github/workflows/deploy.yml
+rg -Fq 'VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}' .github/workflows/deploy.yml
