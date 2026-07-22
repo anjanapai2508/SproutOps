@@ -1,11 +1,20 @@
 import type { User } from '@supabase/supabase-js';
 import { getSupabase } from '../lib/supabase';
+import { getEditingCompletionUpdate } from '../constants/video-workflow';
 import type { EditComment, EditingDetails, EditVersion, EditVersionStatus, Profile, Video } from '../types/domain';
 
 export const EDIT_STATUSES:EditVersionStatus[]=['draft','Editing','In-Review','Complete','approved','superseded'];
 type Client=ReturnType<typeof getSupabase>;
 type Result<T>={data:T|null;error:unknown};
-function unwrap<T>(result:Result<T>):T|null { if(result.error)throw result.error; return result.data; }
+function asError(value:unknown):Error {
+  if(value instanceof Error)return value;
+  if(value&&typeof value==='object'&&'message' in value&&typeof value.message==='string'){
+    const code='code' in value&&typeof value.code==='string'?` (${value.code})`:'';
+    return new Error(`${value.message}${code}`);
+  }
+  return new Error('Could not save editing changes.');
+}
+function unwrap<T>(result:Result<T>):T|null { if(result.error)throw asError(result.error); return result.data; }
 function unique(values:(string|null)[]):string[] { return [...new Set(values.filter((value):value is string=>Boolean(value)))]; }
 
 export function createEditingService(client:Client) {
@@ -34,8 +43,15 @@ export function createEditingService(client:Client) {
       if(!EDIT_STATUSES.includes(status))throw new Error(`Unsupported edit status: ${status}`);
       const versionPayload:Partial<EditVersion>={status};
       if(status==='In-Review')versionPayload.submitted_for_review_at=version.submitted_for_review_at||new Date().toISOString();
-      else if(status==='Complete'||status==='approved'){versionPayload.reviewed_by=userId;versionPayload.reviewed_at=version.reviewed_at||new Date().toISOString();}
-      return {video,activeVersion:await updateVersion(version.id,versionPayload)};
+      else if(status==='Complete'){
+        versionPayload.reviewed_by=userId;
+        versionPayload.reviewed_at=version.reviewed_at||new Date().toISOString();
+      }
+      const activeVersion=await updateVersion(version.id,versionPayload);
+      if(status!=='Complete')return {video,activeVersion};
+      const videoPayload=getEditingCompletionUpdate(video);
+      const savedVideo=unwrap(await client.from('videos').update(videoPayload).eq('id',video.id).select('*').single() as unknown as Result<Video>)!;
+      return {video:savedVideo,activeVersion};
     },
     async addEditComment(versionId:string,user:User,profile:Pick<Profile,'display_name'>|null,message:string):Promise<EditComment> {
       const trimmed=message.trim(); if(!trimmed)throw new Error('Comment cannot be empty');

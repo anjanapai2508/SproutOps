@@ -1,4 +1,4 @@
-import type { EditVersionStatus, Video, VideoNextAction, VideoStage, WorkflowAction } from '../types/domain';
+import type { EditVersion, EditVersionStatus, Video, VideoNextAction, VideoStage, WorkflowAction } from '../types/domain';
 
 export interface WorkflowStep { key:WorkflowAction; label:string; stage:Exclude<VideoStage, 'completed'|'on_hold'> }
 
@@ -49,12 +49,25 @@ export function deriveWorkflowItems(video:Video) {
   }));
 }
 
+export function withEditingVersion(video:Video,version:EditVersion):Video {
+  return {...video,edit_versions:[...(video.edit_versions||[]).filter(({id})=>id!==version.id),version]};
+}
+
 export type ChecklistUpdate = Pick<Video,'completed_actions'|'current_stage'|'next_action'|'published_at'>;
 
 export function getChecklistUpdate(video:Video,actionKey:WorkflowAction,isCompleted:boolean):ChecklistUpdate {
   if(!VIDEO_WORKFLOW.some(({key})=>key===actionKey))throw new Error(`Unknown checklist action: ${actionKey}`);
   const completed=completedKeys(video);
   if(isCompleted)completed.add(actionKey);else completed.delete(actionKey);
+  const completed_actions=VIDEO_WORKFLOW.filter(({key})=>completed.has(key)).map(({key})=>key);
+  const next=VIDEO_WORKFLOW.find(({key})=>!completed.has(key));
+  if(next)return {completed_actions,current_stage:next.stage,next_action:next.key,published_at:null};
+  return {completed_actions,current_stage:'completed',next_action:'no_action_required',published_at:video.published_at||new Date().toISOString()};
+}
+
+export function getEditingCompletionUpdate(video:Video):ChecklistUpdate {
+  const completed=completedKeys(video);
+  VIDEO_WORKFLOW.filter(({stage})=>stage!=='publishing').forEach(({key})=>completed.add(key));
   const completed_actions=VIDEO_WORKFLOW.filter(({key})=>completed.has(key)).map(({key})=>key);
   const next=VIDEO_WORKFLOW.find(({key})=>!completed.has(key));
   if(next)return {completed_actions,current_stage:next.stage,next_action:next.key,published_at:null};

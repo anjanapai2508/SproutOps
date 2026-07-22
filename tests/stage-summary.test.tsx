@@ -13,4 +13,16 @@ describe('StageSummary',()=>{
     expect(screen.getByText('Current')).not.toBeNull();
     expect(screen.getByLabelText('Editing: upcoming')).not.toBeNull();
   });
+
+  it('marks editing complete only when the active editing version is Complete',()=>{
+    const completedActions=['write_script','review_script','shoot_video','record_voice','start_editing','continue_editing','submit_for_review','review_edit','make_edit_changes','approve_edit'];
+    const editingVideo={...video,current_stage:'publishing',next_action:'create_thumbnail',next_action_version_id:'edit-1',completed_actions:completedActions,edit_versions:[{id:'edit-1',status:'Editing'}]} as unknown as Video;
+    const {rerender}=render(<StageSummary video={editingVideo}/>);
+    expect(screen.getByLabelText('Editing: current')).not.toBeNull();
+    expect(screen.getByLabelText('Publishing: upcoming')).not.toBeNull();
+
+    rerender(<StageSummary video={{...editingVideo,edit_versions:[{id:'edit-1',status:'Complete'}]} as unknown as Video}/>);
+    expect(screen.getByLabelText('Editing: completed')).not.toBeNull();
+    expect(screen.getByLabelText('Publishing: current')).not.toBeNull();
+  });
 });

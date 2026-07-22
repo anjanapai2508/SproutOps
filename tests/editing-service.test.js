@@ -70,4 +70,36 @@ describe('editing service',()=>{
     expect(client.from).toHaveBeenCalledTimes(1);
     expect(client.from).toHaveBeenCalledWith('edit_versions');
   });
+
+  it('updates both the edit version and video workflow when status becomes Complete',async()=>{
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-22T19:00:00.000Z'));
+    const version={id:'e1',status:'Complete'};
+    const versionQuery=queryResult({data:version,error:null});
+    const savedVideo={id:'v1',current_stage:'publishing',next_action:'create_thumbnail'};
+    const videoQuery=queryResult({data:savedVideo,error:null});
+    const client={from:vi.fn((table)=>table==='edit_versions'?versionQuery:videoQuery)};
+    const video={id:'v1',completed_actions:['write_script']};
+
+    await expect(createEditingService(client).updateEditingStatus(video,{id:'e1',status:'Editing',reviewed_at:null},'Complete','u1'))
+      .resolves.toEqual({video:savedVideo,activeVersion:version});
+
+    expect(versionQuery.update).toHaveBeenCalledWith({
+      status:'Complete',reviewed_by:'u1',reviewed_at:'2026-07-22T19:00:00.000Z'
+    });
+    expect(videoQuery.update).toHaveBeenCalledWith({
+      completed_actions:['write_script','review_script','shoot_video','record_voice','start_editing','continue_editing','submit_for_review','review_edit','make_edit_changes','approve_edit'],
+      current_stage:'publishing',next_action:'create_thumbnail',published_at:null
+    });
+    expect(videoQuery.eq).toHaveBeenCalledWith('id','v1');
+    vi.useRealTimers();
+  });
+
+  it('turns plain Supabase errors into displayable errors',async()=>{
+    const query=queryResult({data:null,error:{code:'42501',message:'new row violates row-level security policy'}});
+    const client={from:vi.fn(()=>query)};
+
+    await expect(createEditingService(client).updateEditingStatus({id:'v1'},{id:'e1'},'Editing'))
+      .rejects.toThrow('new row violates row-level security policy (42501)');
+  });
 });

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { addEditComment, getEditingDetails, startEditing, updateEditingStatus } from '../services/editing';
-import { EDIT_STATUS_LABELS } from '../constants/video-workflow';
-import type { EditingDetails as Details, EditVersionStatus, Video } from '../types/domain';
+import { EDIT_STATUS_LABELS, withEditingVersion } from '../constants/video-workflow';
+import type { EditingDetails as Details, EditVersion, EditVersionStatus, Video } from '../types/domain';
 
 const SELECTABLE_STATUSES=['Editing','In-Review','Complete'] as const satisfies readonly EditVersionStatus[];
 const format=(value:string|null)=>value?new Intl.DateTimeFormat('en',{month:'short',day:'numeric',year:'numeric'}).format(new Date(value)):'—';
@@ -33,6 +33,7 @@ export function EditingDetails({video,user,onVideoChange}:{video:Video;user:User
     catch(value){setError(value instanceof Error?value.message:'Could not save editing changes.');}
     finally{setBusy(false);}
   };
+  const syncVersion=(base:Video,version:EditVersion)=>onVideoChange?.(withEditingVersion(base,version));
 
   if(loading)return <div className="py-4 text-sm text-slate-500" role="status">Loading editing details…</div>;
   if(error&&!details)return <div className="py-4 text-sm text-red-700" role="alert">Could not load editing details. <button className="btn-text" onClick={()=>void load()}>Retry</button></div>;
@@ -46,7 +47,7 @@ export function EditingDetails({video,user,onVideoChange}:{video:Video;user:User
       try{
         const result=await startEditing(video,user.id);
         setDetails((current)=>({activeVersion:result.activeVersion,versions:[result.activeVersion,...(current?.versions||[])],comments:[],profilesById:current?.profilesById||{}}));
-        onVideoChange?.(result.video);
+        syncVersion(result.video,result.activeVersion);
       }catch(value){setError(value instanceof Error?value.message:'Could not start editing.');}
       finally{setBusy(false);}
     }}>{busy?'Starting…':'Start Editing'}</button>}
@@ -61,7 +62,7 @@ export function EditingDetails({video,user,onVideoChange}:{video:Video;user:User
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div><div className="eyebrow">Editing status</div><div className="mt-1 text-sm text-slate-500">Version {version.version_number}</div></div>
         <label className="grid min-w-44 gap-1 text-xs font-medium text-slate-500">Status
-          <select className="input min-h-10 py-1" value={selectableStatus(version.status)} disabled={busy||!user} onChange={(event)=>user&&void mutate(()=>updateEditingStatus(video,version,event.target.value as EditVersionStatus,user.id))}>
+          <select className="input min-h-10 py-1" value={selectableStatus(version.status)} disabled={busy||!user} onChange={(event)=>user&&void mutate(async()=>{const result=await updateEditingStatus(video,version,event.target.value as EditVersionStatus,user.id);syncVersion(result.video,result.activeVersion);})}>
             {SELECTABLE_STATUSES.map((status)=><option key={status} value={status}>{EDIT_STATUS_LABELS[status]}</option>)}
           </select>
         </label>

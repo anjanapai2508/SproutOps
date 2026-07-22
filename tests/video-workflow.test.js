@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { VIDEO_WORKFLOW, deriveWorkflowItems, getChecklistUpdate } from '../app/src/constants/video-workflow.ts';
+import { VIDEO_WORKFLOW, deriveWorkflowItems, getChecklistUpdate, getEditingCompletionUpdate, withEditingVersion } from '../app/src/constants/video-workflow.ts';
 
 describe('video workflow', () => {
   it('defines the workflow once in database enum order', () => {
@@ -70,5 +70,25 @@ describe('video workflow', () => {
 
   it('rejects unknown checklist items', () => {
     expect(()=>getChecklistUpdate({completed_actions:[]},'unknown',true)).toThrow('Unknown checklist action');
+  });
+
+  it('replaces the active editing version in video state after a status change',()=>{
+    const video={edit_versions:[{id:'edit-1',status:'Editing'},{id:'edit-2',status:'superseded'}]};
+    expect(withEditingVersion(video,{id:'edit-1',status:'Complete'}).edit_versions).toEqual([
+      {id:'edit-2',status:'superseded'},
+      {id:'edit-1',status:'Complete'}
+    ]);
+  });
+
+  it('moves a completed edit into the first unchecked publishing action',()=>{
+    expect(getEditingCompletionUpdate({completed_actions:['write_script','create_thumbnail']})).toEqual({
+      completed_actions:[
+        'write_script','review_script','shoot_video','record_voice','start_editing','continue_editing',
+        'submit_for_review','review_edit','make_edit_changes','approve_edit','create_thumbnail'
+      ],
+      current_stage:'publishing',
+      next_action:'prepare_metadata',
+      published_at:null
+    });
   });
 });

@@ -11,14 +11,17 @@ const stages=[
 
 export function StageSummary({video}:{video:Video}) {
   const completed=new Set(video.completed_actions);
+  const activeEditingVersion=video.edit_versions?.find(({id})=>id===video.next_action_version_id);
+  const editingInProgress=activeEditingVersion?.status==='Editing'||activeEditingVersion?.status==='In-Review';
+  const currentStage=editingInProgress?'editing':video.current_stage;
 
   return <div className="relative mt-5" aria-label="Production pipeline">
     <div className="absolute left-[10%] right-[10%] top-5 h-px bg-slate-300" aria-hidden="true"/>
     <div className="relative grid grid-cols-5 gap-1">
       {stages.map(([stage,icon])=>{
         const stageActions=VIDEO_WORKFLOW.filter((item)=>item.stage===stage);
-        const isCurrent=video.current_stage===stage;
-        const isComplete=stage!=='completed'&&stageActions.length>0&&stageActions.every((item)=>completed.has(item.key));
+        const isCurrent=currentStage===stage;
+        const isComplete=stage==='editing'?activeEditingVersion?.status==='Complete':stage!=='completed'&&stageActions.length>0&&stageActions.every((item)=>completed.has(item.key));
         const state=isCurrent?'current':isComplete?'completed':'upcoming';
         const circle=state==='current'
           ? 'border-2 border-cyan-600 bg-cyan-50 text-cyan-800 shadow-sm'

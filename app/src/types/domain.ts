@@ -1,7 +1,7 @@
 import type { Database } from './database';
 
-export type Video = Database['public']['Tables']['videos']['Row'];
 export type EditVersion = Database['public']['Tables']['edit_versions']['Row'];
+export type Video = Database['public']['Tables']['videos']['Row'] & { edit_versions?:EditVersion[] };
 export type EditComment = Database['public']['Tables']['edit_comments']['Row'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type VideoStage = Video['current_stage'];
