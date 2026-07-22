@@ -1,6 +1,6 @@
 import { getSupabase } from '../lib/supabase';
 import { getChecklistUpdate } from '../constants/video-workflow';
-import type { Video, WorkflowAction } from '../types/domain';
+import type { Profile, Video, WorkflowAction } from '../types/domain';
 
 const UPDATE_FIELDS:(keyof Video)[]=['title','description','current_stage','next_action','next_action_note','next_action_assignee_id','next_action_version_id','published_at','completed_actions'];
 type Client=ReturnType<typeof getSupabase>;
@@ -10,6 +10,10 @@ function unwrap<T>({data,error}:Result<T>):T|null { if(error)throw error; return
 
 export function createVideosService(client:Client) {
   return {
+    async getProfiles():Promise<Profile[]> {
+      const result=await client.from('profiles').select('id, display_name').order('display_name',{ascending:true});
+      return unwrap(result as unknown as Result<Profile[]>)||[];
+    },
     async getVideos():Promise<Video[]> {
       const result=await client.from('videos').select('*, edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))').is('archived_at',null).order('created_at',{ascending:true});
       return (unwrap(result as unknown as Result<Video[]>)||[]);
@@ -40,6 +44,7 @@ export function createVideosService(client:Client) {
 
 const service=()=>createVideosService(getSupabase());
 export const getVideos=()=>service().getVideos();
+export const getProfiles=()=>service().getProfiles();
 export const createVideo=(input:{title:string;description?:string})=>service().createVideo(input);
 export const updateVideo=(id:string,changes:Partial<Video>)=>service().updateVideo(id,changes);
 export const toggleVideoChecklist=(id:string,video:Video,actionKey:WorkflowAction,isCompleted:boolean)=>service().toggleVideoChecklist(id,video,actionKey,isCompleted);

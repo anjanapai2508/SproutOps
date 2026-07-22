@@ -37,6 +37,17 @@ describe('videos service', () => {
     expect(query.order).toHaveBeenCalledWith('created_at', { ascending: true });
   });
 
+  it('fetches assignable profiles by display name',async()=>{
+    const profiles=[{id:'u1',display_name:'Anjana Pai'}];
+    const query=queryResult({data:profiles,error:null});
+    const client={from:vi.fn(()=>query)};
+
+    await expect(createVideosService(client).getProfiles()).resolves.toEqual(profiles);
+    expect(client.from).toHaveBeenCalledWith('profiles');
+    expect(query.select).toHaveBeenCalledWith('id, display_name');
+    expect(query.order).toHaveBeenCalledWith('display_name',{ascending:true});
+  });
+
   it('creates a video with only supported initial fields', async () => {
     const query = queryResult({ data: row, error: null });
     const client = { from: vi.fn(() => query) };
@@ -56,6 +67,15 @@ describe('videos service', () => {
     });
     expect(query.update).toHaveBeenCalledWith({ title: 'New title', current_stage: 'editing' });
     expect(query.eq).toHaveBeenCalledWith('id', 'video-1');
+  });
+
+  it('updates the next-action assignee',async()=>{
+    const saved={...row,next_action_assignee_id:'u1'};
+    const query=queryResult({data:saved,error:null});
+    const client={from:vi.fn(()=>query)};
+
+    await expect(createVideosService(client).updateVideo('video-1',{next_action_assignee_id:'u1'})).resolves.toEqual(saved);
+    expect(query.update).toHaveBeenCalledWith({next_action_assignee_id:'u1'});
   });
 
   it('soft archives instead of deleting', async () => {

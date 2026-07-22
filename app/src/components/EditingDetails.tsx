@@ -53,7 +53,6 @@ export function EditingDetails({video,user,onVideoChange}:{video:Video;user:User
     }}>{busy?'Starting…':'Start Editing'}</button>}
   </div>;
 
-  const profileName=(id:string|null)=>id?(details?.profilesById[id]?.display_name||'Unknown user'):'Unknown user';
   const comments=details?.comments||[];
   const visibleComments=showPrevious?comments:comments.slice(-3);
 
@@ -66,10 +65,6 @@ export function EditingDetails({video,user,onVideoChange}:{video:Video;user:User
             {SELECTABLE_STATUSES.map((status)=><option key={status} value={status}>{EDIT_STATUS_LABELS[status]}</option>)}
           </select>
         </label>
-      </div>
-      <div className="mt-3 grid gap-1 text-xs font-medium text-slate-500">
-        <span>Assigned to {profileName(version.assigned_editor)}</span>
-        <span>Created by {profileName(version.created_by)} · {format(version.created_at)}</span>
       </div>
     </div>
 

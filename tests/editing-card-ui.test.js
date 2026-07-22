@@ -23,6 +23,11 @@ describe('expanded Editing card',()=>{
     expect(editing).toContain('Show previous');
   });
 
+  it('omits editor assignment and creator metadata',()=>{
+    expect(editing).not.toContain('Assigned to');
+    expect(editing).not.toContain('Created by');
+  });
+
   it('replaces editing checklist rows without changing other workflow sections',()=>{
     expect(section).toContain('EditingDetails');
     expect(card).toContain('<EditingSection');

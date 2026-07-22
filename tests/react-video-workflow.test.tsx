@@ -5,6 +5,7 @@ import { VideoCard } from '../app/src/components/VideoCard';
 import type { Video } from '../app/src/types/domain';
 
 const video={id:'v1',sequence_number:1,title:'Test video',description:null,current_stage:'pre_production',next_action:'write_script',completed_actions:[],next_action_assignee_id:null,next_action_version_id:null,next_action_note:null,next_action_updated_at:'2026-01-01',created_by:null,published_at:null,created_at:'2026-01-01',updated_at:'2026-01-01',archived_at:null} satisfies Video;
+const profiles=[{id:'u1',display_name:'Anjana Pai'},{id:'u2',display_name:'Roshan Rathod'}];
 
 describe('React video workflow',()=>{
   it('displays the user-entered title without a sequence prefix',()=>{
@@ -33,5 +34,17 @@ describe('React video workflow',()=>{
     const review=screen.getByRole('checkbox',{name:/review script/i});
     await userEvent.click(review);
     expect(onToggle).toHaveBeenCalledWith('review_script',true);
+  });
+
+  it('shows the assignee on the collapsed card and allows reassignment in details',async()=>{
+    const onAssign=vi.fn();
+    render(<VideoCard video={{...video,next_action_assignee_id:'u1'}} profiles={profiles} onAssign={onAssign} onToggleChecklist={vi.fn()} onUpdate={vi.fn()} onArchive={vi.fn()} userId="u1" />);
+    expect(screen.getByText('Assigned to Anjana Pai')).not.toBeNull();
+
+    await userEvent.click(screen.getByRole('button',{name:/test video/i}));
+    const select=screen.getByRole('combobox',{name:'Assigned To'});
+    expect(screen.getByRole('option',{name:'Roshan Rathod'})).not.toBeNull();
+    await userEvent.selectOptions(select,'u2');
+    expect(onAssign).toHaveBeenCalledWith('u2');
   });
 });
