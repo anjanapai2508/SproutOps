@@ -9,8 +9,8 @@ describe('legal document links',()=>{
 
     const privacy=screen.getByRole('link',{name:'Privacy Policy'});
     const terms=screen.getByRole('link',{name:'Terms of Service'});
-    expect(privacy.getAttribute('href')).toBe('/Privacy%20Policy.pdf');
-    expect(terms.getAttribute('href')).toBe('/Terms%20of%20Service.pdf');
+    expect(privacy.getAttribute('href')).toBe('/PrivacyPolicy.pdf');
+    expect(terms.getAttribute('href')).toBe('/TermsOfService.pdf');
     for(const link of [privacy,terms]){
       expect(link.getAttribute('target')).toBe('_blank');
       expect(link.getAttribute('rel')).toBe('noopener noreferrer');
@@ -18,8 +18,8 @@ describe('legal document links',()=>{
   });
 
   it('publishes both documents from the application root',()=>{
-    expect(fs.existsSync('app/public/Privacy Policy.pdf')).toBe(true);
-    expect(fs.existsSync('app/public/Terms of Service.pdf')).toBe(true);
+    expect(fs.existsSync('app/public/PrivacyPolicy.pdf')).toBe(true);
+    expect(fs.existsSync('app/public/TermsOfService.pdf')).toBe(true);
   });
 
   it('is rendered on both login and authenticated screens',()=>{
