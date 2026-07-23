@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { VideoCard } from '../app/src/components/VideoCard';
 import type { Video } from '../app/src/types/domain';
@@ -59,5 +59,32 @@ describe('React video workflow',()=>{
     expect(screen.getByRole('option',{name:'Roshan Rathod'})).not.toBeNull();
     await userEvent.selectOptions(select,'u2');
     expect(onAssign).toHaveBeenCalledWith('u2');
+  });
+
+  it('shows Save Title only after an exact title change and saves the entered value',async()=>{
+    const onUpdate=vi.fn().mockResolvedValue(undefined);
+    const view=render(<VideoCard video={video} onToggleChecklist={vi.fn()} onUpdate={onUpdate} onArchive={vi.fn()} userId="u1" />);
+    await userEvent.click(screen.getByRole('button',{name:/test video/i}));
+    expect(screen.queryByRole('button',{name:'Save Title'})).toBeNull();
+
+    const title=screen.getByRole('textbox',{name:'Video title'});
+    await userEvent.type(title,' ');
+    await userEvent.click(screen.getByRole('button',{name:'Save Title'}));
+
+    expect(onUpdate).toHaveBeenCalledWith('Test video ');
+    expect((await screen.findByRole('status')).textContent).toContain('Title saved successfully.');
+    view.rerender(<VideoCard video={{...video,title:'Test video '}} onToggleChecklist={vi.fn()} onUpdate={onUpdate} onArchive={vi.fn()} userId="u1" />);
+    expect(screen.queryByRole('button',{name:'Save Title'})).toBeNull();
+  });
+
+  it('does not show a success toast when saving the title fails',async()=>{
+    const onUpdate=vi.fn().mockRejectedValue(new Error('Save failed'));
+    render(<VideoCard video={video} onToggleChecklist={vi.fn()} onUpdate={onUpdate} onArchive={vi.fn()} userId="u1" />);
+    await userEvent.click(screen.getByRole('button',{name:/test video/i}));
+    await userEvent.type(screen.getByRole('textbox',{name:'Video title'}),' changed');
+    await userEvent.click(screen.getByRole('button',{name:'Save Title'}));
+
+    await waitFor(()=>expect(onUpdate).toHaveBeenCalled());
+    expect(screen.queryByText('Title saved successfully.')).toBeNull();
   });
 });
