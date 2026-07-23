@@ -32,6 +32,20 @@ describe('React video workflow',()=>{
     expect(screen.queryByRole('progressbar')).toBeNull();
   });
 
+  it('shows Review as up next when the active edit is in review',()=>{
+    const inReview={
+      ...video,
+      current_stage:'editing',
+      next_action:'start_editing',
+      next_action_version_id:'edit-1',
+      edit_versions:[{id:'edit-1',status:'In-Review'}]
+    } as unknown as Video;
+    render(<VideoCard video={inReview} onToggleChecklist={vi.fn()} onUpdate={vi.fn()} onArchive={vi.fn()} userId="u1" />);
+
+    expect(screen.getByText('Review')).not.toBeNull();
+    expect(screen.queryByText('Start Editing')).toBeNull();
+  });
+
   it('shows the production pipeline only while the card is expanded',async()=>{
     render(<VideoCard video={video} onToggleChecklist={vi.fn()} onUpdate={vi.fn()} onArchive={vi.fn()} userId="u1" />);
     expect(screen.queryByLabelText('Production pipeline')).toBeNull();
