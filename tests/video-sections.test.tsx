@@ -1,20 +1,31 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { VideoSections } from '../app/src/components/VideoSections';
 import { VIDEO_WORKFLOW } from '../app/src/constants/video-workflow';
-import type { Video } from '../app/src/types/domain';
+import type { Profile, Video } from '../app/src/types/domain';
 
 const completeActions=VIDEO_WORKFLOW.map(({key})=>key);
-const video=(id:string,completed_actions:Video['completed_actions']):Video=>({
+const video=(id:string,completed_actions:Video['completed_actions'],next_action_assignee_id:string|null=null):Video=>({
   id,sequence_number:1,title:id,description:null,current_stage:'pre_production',next_action:'write_script',
-  completed_actions,next_action_assignee_id:null,next_action_version_id:null,next_action_note:null,
+  completed_actions,next_action_assignee_id,next_action_version_id:null,next_action_note:null,
   next_action_updated_at:'2026-07-22T00:00:00Z',created_by:null,published_at:null,
   created_at:'2026-07-22T00:00:00Z',updated_at:'2026-07-22T00:00:00Z',archived_at:null
 });
 const renderVideo=(item:Video)=><div key={item.id}>{item.title}</div>;
+const profiles=[{id:'user-1',display_name:'Anjana Pai'},{id:'user-2',display_name:'Roshan Rathod'}] as Profile[];
 
 describe('video sections',()=>{
+  beforeEach(()=>{
+    const values=new Map<string,string>();
+    vi.stubGlobal('localStorage',{
+      getItem:(key:string)=>values.get(key)??null,
+      setItem:(key:string,value:string)=>values.set(key,value),
+      removeItem:(key:string)=>values.delete(key),
+      clear:()=>values.clear()
+    });
+  });
+
   it('shows four active and two completed videos initially, preserving their order',()=>{
     const videos=[
       ...['Active 1','Active 2','Active 3','Active 4','Active 5'].map((title)=>video(title,[])),
@@ -86,5 +97,63 @@ describe('video sections',()=>{
     await userEvent.click(within(activeSection).getByRole('button',{name:'Show More'}));
 
     expect(within(activeSection).getByRole('button',{name:'Active 5'}).getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('filters only active videos by assignee',async()=>{
+    const videos=[
+      video('Anjana active',[],'user-1'),
+      video('Roshan active',[],'user-2'),
+      video('Anjana complete',completeActions,'user-1'),
+      video('Roshan complete',completeActions,'user-2')
+    ];
+    render(<VideoSections videos={videos} profiles={profiles} userId="signed-in-user" renderVideo={renderVideo}/>);
+
+    await userEvent.selectOptions(screen.getByRole('combobox',{name:'Assignee'}),'user-1');
+
+    expect(screen.getByText('Anjana active')).not.toBeNull();
+    expect(screen.getByText('Anjana complete')).not.toBeNull();
+    expect(screen.getByText('Roshan complete')).not.toBeNull();
+    expect(screen.queryByText('Roshan active')).toBeNull();
+  });
+
+  it('places the assignee filter in the Active Videos header',()=>{
+    render(<VideoSections videos={[video('Active',[])]} profiles={profiles} userId="signed-in-user" renderVideo={renderVideo}/>);
+
+    const active=screen.getByRole('region',{name:'Active Videos'});
+    const completed=screen.getByRole('region',{name:'Completed Videos'});
+    expect(within(active).getByRole('combobox',{name:'Assignee'})).not.toBeNull();
+    expect(within(completed).queryByRole('combobox',{name:'Assignee'})).toBeNull();
+  });
+
+  it('filters unassigned videos',async()=>{
+    const videos=[video('Assigned',[],'user-1'),video('No owner',[])];
+    render(<VideoSections videos={videos} profiles={profiles} userId="signed-in-user" renderVideo={renderVideo}/>);
+
+    await userEvent.selectOptions(screen.getByRole('combobox',{name:'Assignee'}),'unassigned');
+
+    expect(within(screen.getByRole('region',{name:'Active Videos'})).getByText('No owner')).not.toBeNull();
+    expect(screen.queryByText('Assigned')).toBeNull();
+  });
+
+  it('persists the filter separately for each signed-in user',async()=>{
+    const videos=[video('Anjana active',[],'user-1'),video('Roshan active',[],'user-2')];
+    const first=render(<VideoSections videos={videos} profiles={profiles} userId="viewer-1" renderVideo={renderVideo}/>);
+    await userEvent.selectOptions(screen.getByRole('combobox',{name:'Assignee'}),'user-2');
+    expect(localStorage.getItem('sproutops:assignee-filter:viewer-1')).toBe('user-2');
+    first.unmount();
+
+    render(<VideoSections videos={videos} profiles={profiles} userId="viewer-1" renderVideo={renderVideo}/>);
+    expect((screen.getByRole('combobox',{name:'Assignee'}) as HTMLSelectElement).value).toBe('user-2');
+    expect(screen.getByText('Roshan active')).not.toBeNull();
+    expect(screen.queryByText('Anjana active')).toBeNull();
+    expect(localStorage.getItem('sproutops:assignee-filter:viewer-2')).toBeNull();
+  });
+
+  it('falls back to all assignees when a saved profile no longer exists',()=>{
+    localStorage.setItem('sproutops:assignee-filter:viewer-missing','missing-user');
+    render(<VideoSections videos={[video('Visible',[],'user-1')]} profiles={profiles} userId="viewer-missing" renderVideo={renderVideo}/>);
+
+    expect((screen.getByRole('combobox',{name:'Assignee'}) as HTMLSelectElement).value).toBe('all');
+    expect(screen.getByText('Visible')).not.toBeNull();
   });
 });
