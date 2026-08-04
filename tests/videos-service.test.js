@@ -3,6 +3,7 @@ import { createVideosService } from '../app/src/services/videos.ts';
 
 const row = {
   id: 'video-1', sequence_number: 1, title: 'Shapes', description: null,
+  project_id: 'project-1',
   current_stage: 'pre_production', next_action: 'write_script',
   next_action_assignee_id: null, next_action_version_id: null,
   next_action_note: null, next_action_updated_at: '2026-07-18T10:00:00Z',
@@ -26,15 +27,27 @@ function queryResult(result) {
 }
 
 describe('videos service', () => {
-  it('fetches only active videos ordered by creation date', async () => {
+  it('fetches only active videos for the selected project ordered by creation date', async () => {
     const query = queryResult({ data: [row], error: null });
     const client = { from: vi.fn(() => query) };
 
-    await expect(createVideosService(client).getVideos()).resolves.toEqual([row]);
+    await expect(createVideosService(client).getVideos('project-1')).resolves.toEqual([row]);
     expect(client.from).toHaveBeenCalledWith('videos');
     expect(query.select).toHaveBeenCalledWith('*, edit_versions!edit_versions_video_id_fkey(*, edit_comments(*))');
+    expect(query.eq).toHaveBeenCalledWith('project_id', 'project-1');
     expect(query.is).toHaveBeenCalledWith('archived_at', null);
     expect(query.order).toHaveBeenCalledWith('created_at', { ascending: true });
+  });
+
+  it('fetches a single video by both video ID and project ID',async()=>{
+    const query=queryResult({data:row,error:null});
+    const client={from:vi.fn(()=>query)};
+
+    await expect(createVideosService(client).getVideo('video-1','project-1')).resolves.toEqual(row);
+
+    expect(query.eq).toHaveBeenCalledWith('id','video-1');
+    expect(query.eq).toHaveBeenCalledWith('project_id','project-1');
+    expect(query.maybeSingle).toHaveBeenCalled();
   });
 
   it('fetches assignable profiles by display name',async()=>{
@@ -52,21 +65,22 @@ describe('videos service', () => {
     const query = queryResult({ data: row, error: null });
     const client = { from: vi.fn(() => query) };
 
-    await createVideosService(client).createVideo({ title: ' Shapes ', description: 'Lesson' });
+    await createVideosService(client).createVideo({ title: ' Shapes ', description: 'Lesson', projectId: 'project-1' });
     expect(query.insert).toHaveBeenCalledWith({
-      title: 'Shapes', description: 'Lesson', current_stage: 'pre_production', next_action: 'write_script'
+      title: 'Shapes', description: 'Lesson', project_id: 'project-1', current_stage: 'pre_production', next_action: 'write_script'
     });
   });
 
-  it('filters undefined and unsupported update fields', async () => {
+  it('filters undefined and unsupported update fields and scopes the update to the selected project', async () => {
     const query = queryResult({ data: row, error: null });
     const client = { from: vi.fn(() => query) };
 
-    await createVideosService(client).updateVideo('video-1', {
+    await createVideosService(client).updateVideo('video-1', 'project-1', {
       title: 'New title', description: undefined, current_stage: 'editing', archived_at: 'unsafe'
     });
     expect(query.update).toHaveBeenCalledWith({ title: 'New title', current_stage: 'editing' });
     expect(query.eq).toHaveBeenCalledWith('id', 'video-1');
+    expect(query.eq).toHaveBeenCalledWith('project_id', 'project-1');
   });
 
   it('updates the next-action assignee',async()=>{
@@ -74,7 +88,7 @@ describe('videos service', () => {
     const query=queryResult({data:saved,error:null});
     const client={from:vi.fn(()=>query)};
 
-    await expect(createVideosService(client).updateVideo('video-1',{next_action_assignee_id:'u1'})).resolves.toEqual(saved);
+    await expect(createVideosService(client).updateVideo('video-1','project-1',{next_action_assignee_id:'u1'})).resolves.toEqual(saved);
     expect(query.update).toHaveBeenCalledWith({next_action_assignee_id:'u1'});
   });
 
@@ -82,9 +96,10 @@ describe('videos service', () => {
     const query = queryResult({ data: row, error: null });
     const client = { from: vi.fn(() => query) };
 
-    await createVideosService(client).archiveVideo('video-1');
+    await createVideosService(client).archiveVideo('video-1','project-1');
     expect(query.update).toHaveBeenCalledWith({ archived_at: expect.any(String) });
     expect(query.eq).toHaveBeenCalledWith('id', 'video-1');
+    expect(query.eq).toHaveBeenCalledWith('project_id', 'project-1');
     expect(query.delete).toBeUndefined();
   });
 
@@ -92,23 +107,24 @@ describe('videos service', () => {
     const saved={...row,completed_actions:['review_script'],current_stage:'pre_production',next_action:'write_script'};
     const query=queryResult({data:saved,error:null});
     const client={from:vi.fn(()=>query)};
-    await expect(createVideosService(client).toggleVideoChecklist('video-1',{...row,completed_actions:['write_script','review_script']},'write_script',false)).resolves.toEqual(saved);
+    await expect(createVideosService(client).toggleVideoChecklist('video-1','project-1',{...row,completed_actions:['write_script','review_script']},'write_script',false)).resolves.toEqual(saved);
     expect(query.update).toHaveBeenCalledWith({completed_actions:['review_script'],current_stage:'pre_production',next_action:'write_script',published_at:null});
     expect(query.eq).toHaveBeenCalledWith('id','video-1');
+    expect(query.eq).toHaveBeenCalledWith('project_id','project-1');
     expect(query.eq).toHaveBeenCalledWith('updated_at',row.updated_at);
   });
 
   it('rejects a stale workflow update', async () => {
     const query=queryResult({data:null,error:null});
     const client={from:vi.fn(()=>query)};
-    await expect(createVideosService(client).toggleVideoChecklist('video-1',row,'write_script',true)).rejects.toThrow('changed');
+    await expect(createVideosService(client).toggleVideoChecklist('video-1','project-1',row,'write_script',true)).rejects.toThrow('changed');
   });
 
   it('propagates checklist update errors', async () => {
     const error=new Error('RLS denied');
     const query=queryResult({data:null,error});
     const client={from:vi.fn(()=>query)};
-    await expect(createVideosService(client).toggleVideoChecklist('video-1',row,'write_script',true)).rejects.toBe(error);
+    await expect(createVideosService(client).toggleVideoChecklist('video-1','project-1',row,'write_script',true)).rejects.toBe(error);
   });
 
   it('throws Supabase errors', async () => {
@@ -116,6 +132,6 @@ describe('videos service', () => {
     const query = queryResult({ data: null, error });
     const client = { from: vi.fn(() => query) };
 
-    await expect(createVideosService(client).getVideos()).rejects.toBe(error);
+    await expect(createVideosService(client).getVideos('project-1')).rejects.toBe(error);
   });
 });

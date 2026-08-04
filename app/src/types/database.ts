@@ -8,8 +8,8 @@ export interface Database {
   public: {
     Tables: {
       videos: {
-        Row: { id:string; sequence_number:number; title:string; description:string|null; current_stage:VideoStage; next_action:WorkflowAction|'no_action_required'; completed_actions:WorkflowAction[]; next_action_assignee_id:string|null; next_action_version_id:string|null; next_action_note:string|null; next_action_updated_at:string; created_by:string|null; published_at:string|null; created_at:string; updated_at:string; archived_at:string|null };
-        Insert: { title:string; description?:string|null; current_stage?:VideoStage; next_action?:WorkflowAction|'no_action_required'; completed_actions?:WorkflowAction[] };
+        Row: { id:string; project_id:string; sequence_number:number; title:string; description:string|null; current_stage:VideoStage; next_action:WorkflowAction|'no_action_required'; completed_actions:WorkflowAction[]; next_action_assignee_id:string|null; next_action_version_id:string|null; next_action_note:string|null; next_action_updated_at:string; created_by:string|null; published_at:string|null; created_at:string; updated_at:string; archived_at:string|null };
+        Insert: { title:string; project_id:string; description?:string|null; current_stage?:VideoStage; next_action?:WorkflowAction|'no_action_required'; completed_actions?:WorkflowAction[] };
         Update: Partial<Database['public']['Tables']['videos']['Row']>;
         Relationships: [];
       };
@@ -29,6 +29,18 @@ export interface Database {
         Row: { id:string; display_name:string|null };
         Insert: { id:string; display_name?:string|null };
         Update: { display_name?:string|null };
+        Relationships: [];
+      };
+      projects: {
+        Row: { id:string; name:string; description:string|null; is_active:boolean; created_by:string|null; created_at:string; updated_at:string };
+        Insert: { id?:string; name:string; description?:string|null; is_active?:boolean; created_by?:string|null };
+        Update: Partial<Database['public']['Tables']['projects']['Row']>;
+        Relationships: [];
+      };
+      project_members: {
+        Row: { project_id:string; profile_id:string; created_at:string };
+        Insert: { project_id:string; profile_id:string; created_at?:string };
+        Update: Partial<Database['public']['Tables']['project_members']['Row']>;
         Relationships: [];
       };
     };

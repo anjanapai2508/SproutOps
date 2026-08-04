@@ -20,9 +20,10 @@ describe('editing service',()=>{
     const videoQuery=queryResult({data:savedVideo,error:null});
     let editCalls=0;
     const client={from:vi.fn((table)=>table==='videos'?videoQuery:++editCalls===1?latestQuery:insertQuery)};
-    await expect(createEditingService(client).startEditing({id:'v1'},'u1')).resolves.toEqual({video:savedVideo,activeVersion:created});
+    await expect(createEditingService(client).startEditing({id:'v1',project_id:'project-1'},'u1')).resolves.toEqual({video:savedVideo,activeVersion:created});
     expect(insertQuery.insert).toHaveBeenCalledWith({video_id:'v1',version_number:3,status:'Editing',created_by:'u1',assigned_editor:'u1'});
     expect(videoQuery.update).toHaveBeenCalledWith({next_action_version_id:'e3'});
+    expect(videoQuery.eq).toHaveBeenCalledWith('project_id','project-1');
   });
 
   it('rejects unsupported edit status without querying',async()=>{
@@ -79,7 +80,7 @@ describe('editing service',()=>{
     const savedVideo={id:'v1',current_stage:'publishing',next_action:'create_thumbnail'};
     const videoQuery=queryResult({data:savedVideo,error:null});
     const client={from:vi.fn((table)=>table==='edit_versions'?versionQuery:videoQuery)};
-    const video={id:'v1',completed_actions:['write_script']};
+    const video={id:'v1',project_id:'project-1',completed_actions:['write_script']};
 
     await expect(createEditingService(client).updateEditingStatus(video,{id:'e1',status:'Editing',reviewed_at:null},'Complete','u1'))
       .resolves.toEqual({video:savedVideo,activeVersion:version});
@@ -92,6 +93,7 @@ describe('editing service',()=>{
       current_stage:'publishing',next_action:'create_thumbnail',published_at:null
     });
     expect(videoQuery.eq).toHaveBeenCalledWith('id','v1');
+    expect(videoQuery.eq).toHaveBeenCalledWith('project_id','project-1');
     vi.useRealTimers();
   });
 

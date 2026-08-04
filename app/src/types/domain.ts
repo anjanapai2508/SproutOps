@@ -4,6 +4,7 @@ export type EditVersion = Database['public']['Tables']['edit_versions']['Row'];
 export type Video = Database['public']['Tables']['videos']['Row'] & { edit_versions?:EditVersion[] };
 export type EditComment = Database['public']['Tables']['edit_comments']['Row'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type Project = Database['public']['Tables']['projects']['Row'];
 export type VideoStage = Video['current_stage'];
 export type VideoNextAction = Video['next_action'];
 export type WorkflowAction = Exclude<VideoNextAction, 'no_action_required'>;

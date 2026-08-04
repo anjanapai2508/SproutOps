@@ -26,7 +26,7 @@ export function createEditingService(client:Client) {
       const latest=unwrap(await client.from('edit_versions').select('version_number').eq('video_id',video.id).order('version_number',{ascending:false}).limit(1).maybeSingle() as unknown as Result<{version_number:number}>)||null;
       const payload={video_id:video.id,version_number:(latest?.version_number||0)+1,status:'Editing' as const,created_by:userId,assigned_editor:userId};
       const activeVersion=unwrap(await client.from('edit_versions').insert(payload).select('*').single() as unknown as Result<EditVersion>)!;
-      const savedVideo=unwrap(await client.from('videos').update({next_action_version_id:activeVersion.id}).eq('id',video.id).select('*').single() as unknown as Result<Video>)!;
+      const savedVideo=unwrap(await client.from('videos').update({next_action_version_id:activeVersion.id}).eq('id',video.id).eq('project_id',video.project_id).select('*').single() as unknown as Result<Video>)!;
       return {video:savedVideo,activeVersion};
     },
     async getEditingDetails(video:Video):Promise<EditingDetails> {
@@ -50,7 +50,7 @@ export function createEditingService(client:Client) {
       const activeVersion=await updateVersion(version.id,versionPayload);
       if(status!=='Complete')return {video,activeVersion};
       const videoPayload=getEditingCompletionUpdate(video);
-      const savedVideo=unwrap(await client.from('videos').update(videoPayload).eq('id',video.id).select('*').single() as unknown as Result<Video>)!;
+      const savedVideo=unwrap(await client.from('videos').update(videoPayload).eq('id',video.id).eq('project_id',video.project_id).select('*').single() as unknown as Result<Video>)!;
       return {video:savedVideo,activeVersion};
     },
     async addEditComment(versionId:string,user:User,profile:Pick<Profile,'display_name'>|null,message:string):Promise<EditComment> {
